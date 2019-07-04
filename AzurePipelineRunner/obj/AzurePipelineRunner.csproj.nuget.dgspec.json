@@ -1,0 +1,65 @@
+{
+  "format": 1,
+  "restore": {
+    "D:\\Repositories\\AzurePipelineRunner\\AzurePipelineRunner\\AzurePipelineRunner.csproj": {}
+  },
+  "projects": {
+    "D:\\Repositories\\AzurePipelineRunner\\AzurePipelineRunner\\AzurePipelineRunner.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\Repositories\\AzurePipelineRunner\\AzurePipelineRunner\\AzurePipelineRunner.csproj",
+        "projectName": "AzurePipelineRunner",
+        "projectPath": "D:\\Repositories\\AzurePipelineRunner\\AzurePipelineRunner\\AzurePipelineRunner.csproj",
+        "packagesPath": "C:\\Users\\fnorm\\.nuget\\packages\\",
+        "outputPath": "D:\\Repositories\\AzurePipelineRunner\\AzurePipelineRunner\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\fnorm\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp2.2"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "D:\\Repositories\\hoverfly-dotnet\\src\\out": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp2.2": {
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp2.2": {
+          "dependencies": {
+            "Microsoft.NETCore.App": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[2.2.0, )",
+              "autoReferenced": true
+            },
+            "YamlDotNet": {
+              "target": "Package",
+              "version": "[6.1.1, )"
+            }
+          },
+          "imports": [
+            "net461"
+          ],
+          "assetTargetFallback": true,
+          "warn": true
+        }
+      }
+    }
+  }
+}

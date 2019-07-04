@@ -1,0 +1,11 @@
+D:\Repositories\AzurePipelineRunner\AzurePipelineRunner\bin\Debug\netcoreapp2.2\AzurePipelineRunner.deps.json
+D:\Repositories\AzurePipelineRunner\AzurePipelineRunner\bin\Debug\netcoreapp2.2\AzurePipelineRunner.runtimeconfig.json
+D:\Repositories\AzurePipelineRunner\AzurePipelineRunner\bin\Debug\netcoreapp2.2\AzurePipelineRunner.runtimeconfig.dev.json
+D:\Repositories\AzurePipelineRunner\AzurePipelineRunner\bin\Debug\netcoreapp2.2\AzurePipelineRunner.dll
+D:\Repositories\AzurePipelineRunner\AzurePipelineRunner\obj\Debug\netcoreapp2.2\AzurePipelineRunner.csprojAssemblyReference.cache
+D:\Repositories\AzurePipelineRunner\AzurePipelineRunner\obj\Debug\netcoreapp2.2\AzurePipelineRunner.csproj.CoreCompileInputs.cache
+D:\Repositories\AzurePipelineRunner\AzurePipelineRunner\obj\Debug\netcoreapp2.2\AzurePipelineRunner.AssemblyInfoInputs.cache
+D:\Repositories\AzurePipelineRunner\AzurePipelineRunner\obj\Debug\netcoreapp2.2\AzurePipelineRunner.AssemblyInfo.cs
+D:\Repositories\AzurePipelineRunner\AzurePipelineRunner\bin\Debug\netcoreapp2.2\AzurePipelineRunner.pdb
+D:\Repositories\AzurePipelineRunner\AzurePipelineRunner\obj\Debug\netcoreapp2.2\AzurePipelineRunner.dll
+D:\Repositories\AzurePipelineRunner\AzurePipelineRunner\obj\Debug\netcoreapp2.2\AzurePipelineRunner.pdb
