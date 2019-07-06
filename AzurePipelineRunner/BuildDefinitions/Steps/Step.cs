@@ -29,15 +29,26 @@ namespace AzurePipelineRunner.BuildDefinitions.Steps
 
         internal void UpdatePropertiesWithVariableValues(Dictionary<string, string> variables)
         {
-            Script = Regex.Replace(Script, @"\$\((\w+)\)", new MatchEvaluator( m => ReplaceCC(m,variables)));
+            Script = UpdateValueWithVariables(Script, variables);
         }
 
-        public string ReplaceCC(Match m, Dictionary<string, string> variables)
+        private string UpdateValueWithVariables(string value, Dictionary<string, string> variables)
+        {
+            if (value == null)
+                return null;
+
+            if (value.Length == 0)
+                return value;
+
+            return Regex.Replace(value, @"\$\((\w+)\)", new MatchEvaluator(m => ReplaceVariable(m, variables)));
+        }
+
+        public string ReplaceVariable(Match m, Dictionary<string, string> variables)
         {
             var variableName = m.Groups[1].Value;
 
             if (variables.ContainsKey(variableName))
-                return variables[m.Groups[1].Value];
+                return variables[m.Groups[1].Value] == null ? string.Empty : variables[m.Groups[1].Value];
 
             throw new System.ArgumentException($"The variable '{variableName}' can't be found");
         }

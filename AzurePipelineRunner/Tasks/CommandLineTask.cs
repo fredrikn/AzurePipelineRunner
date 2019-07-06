@@ -13,7 +13,7 @@ namespace AzurePipelineRunner.Tasks
     {
         public void Run(string scriptToRun)
         {
-            var content = File.ReadAllText(@"D:\Repositories\AzurePipelineRunner\azure-pipelines-tasks-master\Tasks\CmdLineV2\cmdline.ps1");
+            var content = File.ReadAllText(@"D:\Repositories\azure-pipelines-tasks-master\Tasks\CmdLineV2\cmdline.ps1");
 
             var inputs = new Dictionary<string, object> {
                 { "input.script", scriptToRun },

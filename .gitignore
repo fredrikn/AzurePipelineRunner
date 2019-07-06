@@ -1,11 +1,3 @@
 */**/bin
 */**/obj
 */**/\.vs
-*/**/TestResults
-
-
-
-src/out
-src/packages
-src/\.nuget/
-src/\_Ncrunch*
