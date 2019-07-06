@@ -8,7 +8,6 @@ namespace AzurePipelineRunner
         public void ReportBuildResults(List<StepReport> outputStepReport)
         {
             Console.Write(Environment.NewLine);
-            Console.Write(Environment.NewLine);
             Console.WriteLine("========================== Start of Build Restult ========================== ");
             Console.Write(Environment.NewLine);
 
@@ -27,6 +26,7 @@ namespace AzurePipelineRunner
 
             Console.Write(Environment.NewLine);
             Console.WriteLine("========================== End of Build Restult ========================== ");
+            Console.Write(Environment.NewLine);
         }
     }
 }

@@ -1,17 +1,21 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using YamlDotNet.Serialization;
 
 namespace AzurePipelineRunner.BuildDefinitions.Steps
 {
-    public class Step : IShortcutCommandLineScriptStep, IShortcutPowershellStep
+    public class Step : IShortcutCommandLineScriptStep, IShortcutPowershellStep, ITaskStep
     {
         public string Script { get; set; }
 
         public string Powershell { get; set; }
 
+        [YamlMember(Alias = "task")]
+        public string TaskType { get; set; }
+
         public string WorkingDirectory { get; set; }
 
-        public bool FailOnStderr { get; set; }
+        public bool FailOnStderr { get; set; } = false;
 
         public string DisplayName { get; set; }
 
@@ -19,15 +23,17 @@ namespace AzurePipelineRunner.BuildDefinitions.Steps
 
         public string Condition { get; set; }
 
-        public bool ContinueOnError { get; set; }
+        public bool ContinueOnError { get; set; } = false;
 
-        public bool Enabled { get; set; }
+        public bool Enabled { get; set; } = true;
 
         public int TimeoutInMinutes { get; set; }
 
         public Dictionary<string, string> Env { get; set; }
 
-        public bool IgnoreLASTEXITCODE { get; set; }
+        public bool IgnoreLASTEXITCODE { get; set; } = false;
+
+        public Dictionary<string, object> Inputs { get; set; }
 
         public ErrorActionPreference ErrorActionPreference { get; set; }
 
@@ -37,6 +43,25 @@ namespace AzurePipelineRunner.BuildDefinitions.Steps
             {
                 if (property.CanWrite && property.CanRead && property.PropertyType == typeof(string))
                     property.SetValue(this, UpdateValueWithVariables(property.GetValue(this) as string, variables));
+            }
+
+            if(Inputs != null && Inputs.Count > 0)
+            {
+                var newInputs = new Dictionary<string, object>();
+
+                foreach (var input in Inputs)
+                {
+                    object newValue = null;
+
+                    if (input.Value is string)
+                        newValue = UpdateValueWithVariables((string)input.Value, variables);
+                    else
+                        newValue = input.Value;
+
+                    newInputs.Add(input.Key, newValue);
+                }
+
+                Inputs = newInputs;
             }
         }
 

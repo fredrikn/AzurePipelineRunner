@@ -29,6 +29,9 @@ namespace AzurePipelineRunner
 
             foreach (var step in build.Tasks)
             {
+                if (!step.Enabled)
+                    continue;
+
                 Console.Write(Environment.NewLine);
                 Console.WriteLine($"========================== BEGIN STEP '{step.DisplayName}' ==========================");
                 Console.Write(Environment.NewLine);
@@ -39,6 +42,9 @@ namespace AzurePipelineRunner
                 Console.Write(Environment.NewLine);
                 Console.WriteLine($"========================== END STEP '{step.DisplayName}' =============================");
                 Console.Write(Environment.NewLine);
+
+                if (!step.ContinueOnError && !stepReport.Succeed)
+                    break;
             }
 
             return outputStepReport;

@@ -25,6 +25,8 @@ namespace AzurePipelineRunner.BuildDefinitions
                         yield return new ShortcutCommandLineTask(step);
                     else if (!string.IsNullOrEmpty(step.Powershell))
                         yield return new ShortcutPowershellTask(step);
+                    else if (!string.IsNullOrEmpty(step.TaskType))
+                        yield return new Task(step);
                     else
                         throw new NotSupportedException();
                 }

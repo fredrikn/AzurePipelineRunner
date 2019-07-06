@@ -1,5 +1,4 @@
 ﻿using AzurePipelineRunner.BuildDefinitions.Steps;
-using System;
 
 namespace AzurePipelineRunner.Tasks
 {

@@ -11,22 +11,13 @@
     
         public static string RunPowerShellScript(
             string script, 
-            string workerPath, 
-            List<string> includeScripts = null,
-            Dictionary<string, object> variables = null)
-        {
-            return Execute(script, workerPath, includeScripts, variables);
-        }
-    
-    
-        private static string Execute(
-            string script, 
             string workerDirectory, 
             List<string> includeScripts = null,
-            Dictionary<string, object> variables = null)
+            Dictionary<string, object> variables = null,
+            bool verbose = false)
         {
-            var bootstrapFile = CreatePowerShellBootstrapFile(script, workerDirectory, includeScripts, variables);
-    
+            var bootstrapFile = CreatePowerShellBootstrapFile(script, workerDirectory, includeScripts, variables, verbose);
+
             try
             {
                 var commandArguments = CreateProcessCommandArguments(bootstrapFile);
@@ -37,7 +28,6 @@
                 File.Delete(bootstrapFile);
             }
         }
-    
     
         private static StringBuilder CreateProcessCommandArguments(string bootstrapFile)
         {
@@ -56,7 +46,8 @@
             string script,
             string workerPath,
             List<string> includeScrips = null,
-            Dictionary<string, object> variables = null)
+            Dictionary<string, object> variables = null,
+            bool verbose = false)
         {
             var bootstrapFile = Path.Combine(workerPath, "TempDeploy." + Guid.NewGuid() + ".ps1");
     
@@ -83,7 +74,10 @@
                 writer.WriteLine("}");
 
                 // TODO make sure verbose is something that is passed from the main argument instead as an optional settings
-                writer.WriteLine("Main -verbose");
+                if (verbose)
+                    writer.WriteLine("Main -verbose");
+                else
+                    writer.WriteLine("Main");
 
                 writer.Flush();
             }
