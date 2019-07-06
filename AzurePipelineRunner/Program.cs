@@ -12,7 +12,7 @@ namespace AzurePipelineRunner
     {
         static void Main(string[] args)
         {
-            var input = new StringReader(Document);
+            var input = new StringReader(File.ReadAllText("BuildTest.yaml"));
 
             var deserializer = new DeserializerBuilder()
                 .WithNamingConvention(new CamelCaseNamingConvention())
@@ -28,28 +28,6 @@ namespace AzurePipelineRunner
 
             Console.WriteLine("Done!");
         }
-
-        static string Document = @"
-# ASP.NET Core
-# Build and test ASP.NET Core projects targeting .NET Core.
-# Add steps that run tests, create a NuGet package, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
-
-trigger:
-- master
-
-pool:
-  vmImage: 'ubuntu-latest'
-
-variables:
-  buildConfiguration: 'Release'
-
-steps:
-- script: dotnet build --configuration $(buildConfiguration)
-  displayName: 'dotnet build $(buildConfiguration)'
-- powershell: Write-Host 'Hello World!'
-  displayName: 'Write-Host Hello World!'
-";
     }
 
     public class Build
@@ -57,7 +35,7 @@ steps:
         public Dictionary<string, string> Variables { get; set; }
 
         [YamlMember(Alias = "steps")]
-        public List<Task> AllSteps { get; set; }
+        public List<Step> AllSteps { get; set; }
 
         public IEnumerable<BaseTask> Tasks
         {
@@ -65,10 +43,12 @@ steps:
             {
                 foreach (var step in AllSteps)
                 {
+                    step.UpdatePropertiesWithVariableValues(Variables);
+
                     if (!string.IsNullOrEmpty(step.Script))
                         yield return new ShortcutCommandLineTask(step);
                     else if (!string.IsNullOrEmpty(step.Powershell))
-                        yield return new PowershellTask(step);
+                        yield return new ShortcutPowershellTask(step);
                     else
                        throw new NotSupportedException();
                 }

@@ -15,11 +15,29 @@ namespace AzurePipelineRunner.Tasks
         {
             var content = File.ReadAllText(@"D:\Repositories\AzurePipelineRunner\azure-pipelines-tasks-master\Tasks\CmdLineV2\cmdline.ps1");
 
+            var inputs = new Dictionary<string, object> {
+                { "input.script", scriptToRun },
+                { "input.failOnStderr", "$TRUE" },
+                { "input.workingDirectory", Path.Combine(Environment.CurrentDirectory, "..\\..\\..\\") }
+            };
+
+            var taskVariables = new Dictionary<string, object> {
+                { "task.agent.tempDirectory", "D:\\temp" }
+            };
+
+            var variables = new Dictionary<string, object>();
+
+            foreach (var item in inputs)
+                variables.Add(item.Key, item.Value);
+
+            foreach (var item in taskVariables)
+                variables.Add(item.Key, item.Value);
+
             PowerShellInvoker.RunPowerShellScript(
                 content,
                 Environment.CurrentDirectory,
                 new List<string> { @"D:\Repositories\AzurePipelineRunner\AzurePipelineRunner\Helpers\powershell-common.ps1" },
-                new Dictionary<string, object> { { "script", scriptToRun } } );
+                variables);
         }
     }
 }

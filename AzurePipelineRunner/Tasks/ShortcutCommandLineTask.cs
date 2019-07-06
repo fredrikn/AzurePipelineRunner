@@ -3,15 +3,20 @@ using System;
 
 namespace AzurePipelineRunner.Tasks
 {
-    public class ShortcutCommandLineTask : BaseTask, IScriptTaskProperties
+    public class ShortcutCommandLineTask : BaseTask, IShortcutCommandLineScriptStep
     {
-        public ShortcutCommandLineTask(IScriptTaskProperties scriptProperties)
+        public ShortcutCommandLineTask(IShortcutCommandLineScriptStep scriptProperties) : base(scriptProperties)
         {
             Script = scriptProperties.Script;
-            DisplayName = scriptProperties.DisplayName;
+            WorkingDirectory = scriptProperties.WorkingDirectory;
+            FailOnStderr = scriptProperties.FailOnStderr;
         }
 
         public string Script { get; set; }
+
+        public string WorkingDirectory { get; set; }
+
+        public bool FailOnStderr { get; set; }
 
         public override void Run()
         {

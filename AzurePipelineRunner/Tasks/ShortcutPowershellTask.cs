@@ -3,12 +3,11 @@ using System;
 
 namespace AzurePipelineRunner.Tasks
 {
-    public class PowershellTask : BaseTask, IPowershellTaskProperties
+    public class ShortcutPowershellTask : BaseTask, IShortcutPowershellStep
     {
-        public PowershellTask(IPowershellTaskProperties scriptProperties)
+        public ShortcutPowershellTask(IShortcutPowershellStep scriptProperties) : base(scriptProperties)
         {
             Powershell = scriptProperties.Powershell;
-            DisplayName = scriptProperties.DisplayName;
         }
 
         public string Powershell { get; set; }

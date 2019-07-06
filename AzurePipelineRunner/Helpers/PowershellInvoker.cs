@@ -42,7 +42,7 @@
         private static StringBuilder CreateProcessCommandArguments(string bootstrapFile)
         {
             var commandArguments = new StringBuilder();
-    
+
             commandArguments.Append("-NonInteractive ");
             commandArguments.Append("-NoLogo ");
             commandArguments.Append("-ExecutionPolicy ByPass ");
@@ -82,9 +82,8 @@
 
                 writer.WriteLine("}");
 
-                writer.WriteLine("Main");
-
-
+                // TODO make sure verbose is something that is passed from the main argument instead as an optional settings
+                writer.WriteLine("Main -verbose");
 
                 writer.Flush();
             }
@@ -110,7 +109,7 @@
     
         private static string CreatePowerShellEncondingText(object value)
         {
-            return String.Format(
+            return string.Format(
                 "[System.Text.Encoding]::Unicode.GetString( [Convert]::FromBase64String( \"{0}\" ) )",
                 Convert.ToBase64String(Encoding.Unicode.GetBytes(value == null ? string.Empty : value.ToString())));
         }
@@ -120,7 +119,7 @@
         {
             if (string.IsNullOrWhiteSpace(variableKey))
                 throw new ArgumentNullException("variableKey");
-    
+
             return variableKey.Replace(".", string.Empty)
                               .Replace("-", string.Empty);
         }
