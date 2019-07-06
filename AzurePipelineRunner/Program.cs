@@ -1,5 +1,4 @@
-﻿using AzurePipelineRunner.BuildDefinitions.Steps;
-using AzurePipelineRunner.Tasks;
+﻿using AzurePipelineRunner.BuildDefinitions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,47 +11,41 @@ namespace AzurePipelineRunner
     {
         static void Main(string[] args)
         {
-            var input = new StringReader(File.ReadAllText("BuildTest.yaml"));
+            var build = GetBuild(File.ReadAllText("BuildTest.yaml"));
+
+            var outputStepReport = RunBuild(build);
+
+            var buildReporter = new BuildReporter();
+            buildReporter.ReportBuildResults(outputStepReport);
+
+            Console.WriteLine("Done!");
+        }
+
+        private static List<StepReport> RunBuild(Build build)
+        {
+            var stepInvoker = new StepInvoker();
+
+            var outputStepReport = new List<StepReport>();
+
+            foreach (var step in build.Tasks)
+            {
+                var stepReport = stepInvoker.RunStep(step);
+                outputStepReport.Add(stepReport);
+            }
+
+            return outputStepReport;
+        }
+
+        private static Build GetBuild(string build)
+        {
+            var input = new StringReader(build);
 
             var deserializer = new DeserializerBuilder()
                 .WithNamingConvention(new CamelCaseNamingConvention())
                 .IgnoreUnmatchedProperties()
                 .Build();
 
-            var build = deserializer.Deserialize<Build>(input);
-
-            foreach (var step in build.Tasks)
-            {
-                step.Run();
-            }
-
-            Console.WriteLine("Done!");
-        }
-    }
-
-    public class Build
-    {
-        public Dictionary<string, string> Variables { get; set; }
-
-        [YamlMember(Alias = "steps")]
-        public List<Step> AllSteps { get; set; }
-
-        public IEnumerable<BaseTask> Tasks
-        {
-            get
-            {
-                foreach (var step in AllSteps)
-                {
-                    step.UpdatePropertiesWithVariableValues(Variables);
-
-                    if (!string.IsNullOrEmpty(step.Script))
-                        yield return new ShortcutCommandLineTask(step);
-                    else if (!string.IsNullOrEmpty(step.Powershell))
-                        yield return new ShortcutPowershellTask(step);
-                    else
-                       throw new NotSupportedException();
-                }
-            }
+            return deserializer.Deserialize<Build>(input);
         }
     }
 }
