@@ -29,7 +29,11 @@ namespace AzurePipelineRunner.BuildDefinitions.Steps
 
         internal void UpdatePropertiesWithVariableValues(Dictionary<string, string> variables)
         {
-            Script = UpdateValueWithVariables(Script, variables);
+            foreach (var property in GetType().GetProperties())
+            {
+                if (property.CanWrite && property.CanRead && property.PropertyType == typeof(string))
+                    property.SetValue(this, UpdateValueWithVariables(property.GetValue(this) as string, variables));
+            }
         }
 
         private string UpdateValueWithVariables(string value, Dictionary<string, string> variables)
