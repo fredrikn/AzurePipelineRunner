@@ -16,17 +16,20 @@ namespace AzurePipelineRunner
             try
             {
                 step.Run();
+
                 stepReport.Succeed = true;
             }
             catch (Exception e)
             {
                 stepReport.Error = e;
                 stepReport.Succeed = false;
+
+                Console.WriteLine(e);
             }
             finally
             {
-                stopWatch.Stop();
                 stepReport.Time = stopWatch.Elapsed;
+                stopWatch.Stop();
             }
 
             return stepReport;

@@ -8,13 +8,20 @@ namespace AzurePipelineRunner.Tasks
         public ShortcutPowershellTask(IShortcutPowershellStep scriptProperties) : base(scriptProperties)
         {
             Powershell = scriptProperties.Powershell;
+            IgnoreLASTEXITCODE = scriptProperties.IgnoreLASTEXITCODE;
+            ErrorActionPreference = ErrorActionPreference;
         }
 
         public string Powershell { get; set; }
 
+        public bool IgnoreLASTEXITCODE { get; set; }
+
+        public ErrorActionPreference ErrorActionPreference { get; set; }
+
         public override void Run()
         {
-            Console.WriteLine(DisplayName);
+            var powershellTask = new PowershellTask();
+            powershellTask.Run(Powershell);
         }
     }
 }

@@ -27,6 +27,10 @@ namespace AzurePipelineRunner.BuildDefinitions.Steps
 
         public Dictionary<string, string> Env { get; set; }
 
+        public bool IgnoreLASTEXITCODE { get; set; }
+
+        public ErrorActionPreference ErrorActionPreference { get; set; }
+
         internal void UpdatePropertiesWithVariableValues(Dictionary<string, string> variables)
         {
             foreach (var property in GetType().GetProperties())

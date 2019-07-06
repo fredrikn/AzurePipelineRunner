@@ -21,10 +21,7 @@ namespace AzurePipelineRunner.Tasks
         public override void Run()
         {
             var commandLineTask = new CommandLineTask();
-
             commandLineTask.Run(Script);
-
-            Console.WriteLine(DisplayName);
         }
     }
 

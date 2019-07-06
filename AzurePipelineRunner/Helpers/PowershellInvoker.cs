@@ -102,8 +102,18 @@
         {
             foreach (var variable in variables)
             {
-                WriteVariableLine(
-                    TransformToValidPowerShellVariableName(variable.Key), CreatePowerShellEncondingText(variable.Value), writer);
+                string value;
+
+                if (variable.Value is bool)
+                {
+                    value = (bool)variable.Value ? "$true" : "$false";
+                }
+                else
+                {
+                    value = CreatePowerShellEncondingText(variable.Value);
+                }
+
+                WriteVariableLine(TransformToValidPowerShellVariableName(variable.Key), value, writer);
             }
         }
     
@@ -135,8 +145,6 @@
             var powerShellExe = @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe";
     
             var processInfo = SetupProcessStartInfo(commandArguments, powerShellExe, workerDirectory);
-    
-            //TODO: Make sure this process can report on each error and out put to the depoy controller.
     
             var process = Process.Start(processInfo);
     

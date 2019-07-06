@@ -9,24 +9,24 @@ namespace AzurePipelineRunner
         {
             Console.Write(Environment.NewLine);
             Console.Write(Environment.NewLine);
-            Console.WriteLine("----------------------Start of Build Restult-----------------------");
+            Console.WriteLine("========================== Start of Build Restult ========================== ");
             Console.Write(Environment.NewLine);
 
             foreach (var report in outputStepReport)
             {
-                var name = report.Name?.Substring(0, Math.Min(report.Name.Length, 36));
+                var name = report.Name?.Substring(0, Math.Min(report.Name.Length, 40));
 
-                if (name.Length > 33)
+                if (name.Length > 37)
                     name += "...";
 
-                name = name.PadRight(36, ' ');
+                name = name.PadRight(40, ' ');
 
                 var succeed = report.Succeed ? "Succeed" : "Failed";
                 Console.WriteLine($" {name}  [{report.Time.ToString("c")}]  {succeed}");
             }
 
             Console.Write(Environment.NewLine);
-            Console.WriteLine("-----------------------End of Build Restult------------------------");
+            Console.WriteLine("========================== End of Build Restult ========================== ");
         }
     }
 }

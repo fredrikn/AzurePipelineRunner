@@ -5,19 +5,24 @@ using System.IO;
 
 namespace AzurePipelineRunner.Tasks
 {
-    //https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/command-line?view=azure-devops&tabs=yaml
+    //https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=example#powershell
 
-    //https://github.com/microsoft/azure-pipelines-tasks/tree/master/Tasks/CmdLineV2
+    //https://github.com/microsoft/azure-pipelines-tasks/blob/master/Tasks/PowerShellV2/powershell.ps1
 
-    public class CommandLineTask
+    public class PowershellTask
     {
         public void Run(string scriptToRun)
         {
-            var content = File.ReadAllText(@"D:\Repositories\azure-pipelines-tasks-master\Tasks\CmdLineV2\cmdline.ps1");
+            var content = File.ReadAllText(@"D:\Repositories\azure-pipelines-tasks-master\Tasks\PowerShellV2/powershell.ps1");
 
             var inputs = new Dictionary<string, object> {
                 { "input.script", scriptToRun },
+                { "input.arguments", "" },
+                { "input.pwsh", false },
                 { "input.failOnStderr", true },
+                { "input.ignoreLASTEXITCODE", false },
+                { "input.targetType", "INLINE" },
+                { "input.errorActionPreference", "Stop" },
                 { "input.workingDirectory", Path.Combine(Environment.CurrentDirectory, "..\\..\\..\\") }
             };
 
@@ -35,7 +40,7 @@ namespace AzurePipelineRunner.Tasks
 
             PowerShellInvoker.RunPowerShellScript(
                 content,
-                Environment.CurrentDirectory,
+                "D:\\temp",
                 new List<string> { @"D:\Repositories\AzurePipelineRunner\AzurePipelineRunner\Helpers\powershell-common.ps1" },
                 variables);
         }

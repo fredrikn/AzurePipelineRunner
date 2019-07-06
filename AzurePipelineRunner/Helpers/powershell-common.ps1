@@ -49,15 +49,25 @@ function global:Import-VstsLocStrings {
  param ([string]$path)
 }
 
-function global:Get-VstsInput {
- [CmdletBinding()]
- param ([string]$name,
+function Get-VstsInput {
+    [CmdletBinding(DefaultParameterSetName = 'Require')]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Name,
+        [Parameter(ParameterSetName = 'Default')]
+        $Default,
+        [Parameter(ParameterSetName = 'Require')]
+        [switch]$Require,
         [switch]$AsBool,
-        [switch]$Require)
+        [switch]$AsInt)
 
 	$variableName = "input" + $name.replace(".", "")
 
 	$variableValue = Get-Variable -Name $variableName -ValueOnly
+
+	if([string]::IsNullOrEmpty($variableValue)) {
+		$variableValue = $Default		
+	}
 
 	Write-Verbose "The value for variable: '$name': $variableValue"
 
