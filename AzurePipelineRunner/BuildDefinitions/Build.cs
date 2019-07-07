@@ -2,6 +2,7 @@
 using AzurePipelineRunner.Tasks;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using YamlDotNet.Serialization;
 
 namespace AzurePipelineRunner.BuildDefinitions
@@ -22,7 +23,16 @@ namespace AzurePipelineRunner.BuildDefinitions
                     step.UpdatePropertiesWithVariableValues(Variables);
 
                     if (!string.IsNullOrEmpty(step.Script))
-                        yield return new ShortcutCommandLineTask(step);
+                    {
+                        step.TaskType = "CmdLine@2";
+                        var task = new Task(step);
+
+                        task.Inputs.Add("script", step.Script);
+                        task.Inputs.Add("failOnStderr", step.FailOnStderr);
+                        task.Inputs.Add("workingDirectory", step.WorkingDirectory == null ? Path.Combine(Environment.CurrentDirectory, "..\\..\\..\\") : step.WorkingDirectory);
+
+                        yield return task;
+                    }
                     else if (!string.IsNullOrEmpty(step.Powershell))
                         yield return new ShortcutPowershellTask(step);
                     else if (!string.IsNullOrEmpty(step.TaskType))

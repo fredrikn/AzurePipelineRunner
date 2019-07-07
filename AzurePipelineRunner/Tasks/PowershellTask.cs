@@ -9,6 +9,8 @@ namespace AzurePipelineRunner.Tasks
 
     //https://github.com/microsoft/azure-pipelines-tasks/blob/master/Tasks/PowerShellV2/powershell.ps1
 
+    //https://github.com/microsoft/azure-pipelines-task-lib/blob/master/powershell/VstsTaskSdk/LegacyFindFunctions.ps1
+
     public class PowershellTask
     {
         public void Run(string scriptToRun)

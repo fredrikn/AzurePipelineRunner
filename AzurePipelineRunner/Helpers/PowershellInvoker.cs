@@ -41,7 +41,6 @@
             return commandArguments;
         }
     
-    
         private static string CreatePowerShellBootstrapFile(
             string script,
             string workerPath,
@@ -53,31 +52,20 @@
     
             using (var writer = new StreamWriter(bootstrapFile))
             {
+                writer.WriteLine(@"Import-Module -Name D:\ap\_build\Tasks\CmdLineV2\ps_modules\VstsTaskSdk -ArgumentList @{ NonInteractive = $true; }");
+
                 AddVariablesToScript(variables, writer);
 
-                if (includeScrips != null && includeScrips.Count > 0)
-                {
-                    foreach (var includeScript in includeScrips)
-                    {
-                        writer.WriteLine(File.ReadAllText(includeScript));
-                    }
-                }
+                writer.WriteLine("$env:AGENT_VERSION = '2.115.0'");
 
-                writer.WriteLine();
-    
                 writer.WriteLine("## Invoke Script:");
-
-                writer.WriteLine("function Main {");
-
-                writer.WriteLine(script);
-
-                writer.WriteLine("}");
+                writer.WriteLine($"Invoke-VstsTaskScript -ScriptBlock ([scriptblock]::Create('{script}')) -Verbose");
 
                 // TODO make sure verbose is something that is passed from the main argument instead as an optional settings
-                if (verbose)
-                    writer.WriteLine("Main -verbose");
-                else
-                    writer.WriteLine("Main");
+                //if (verbose)
+                //    writer.WriteLine("Main -verbose");
+                //else
+                //    writer.WriteLine("Main");
 
                 writer.Flush();
             }
@@ -130,7 +118,10 @@
     
         private static void WriteVariableLine(string variableName, string value, StreamWriter writer)
         {
-            writer.WriteLine("${0} = {1}", variableName, value);
+
+            //writer.WriteLine($"$script:vault['{variableName}'] =  New-Object System.Management.Automation.PSCredential('{variableName}', (ConvertTo-SecureString -String '{value}' -AsPlainText -Force))");
+
+            writer.WriteLine("$Env:{0} = {1}", variableName, value);
         }
     
     

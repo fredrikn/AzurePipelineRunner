@@ -13,7 +13,7 @@ namespace AzurePipelineRunner.Tasks
     {
         public void Run(string scriptToRun)
         {
-            var content = File.ReadAllText(@"D:\Repositories\azure-pipelines-tasks-master\Tasks\CmdLineV2\cmdline.ps1");
+            var content = File.ReadAllText(@"D:\Repositories\azure-pipelines-tasks-master\_build\Tasks\CmdLineV2\cmdline.ps1");
 
             var inputs = new Dictionary<string, object> {
                 { "input.script", scriptToRun },
@@ -36,7 +36,7 @@ namespace AzurePipelineRunner.Tasks
             PowerShellInvoker.RunPowerShellScript(
                 content,
                 Environment.CurrentDirectory,
-                new List<string> { @"D:\Repositories\AzurePipelineRunner\AzurePipelineRunner\Helpers\powershell-common.ps1" },
+                null, //new List<string> { @"D:\Repositories\AzurePipelineRunner\AzurePipelineRunner\Helpers\powershell-common.ps1" },
                 variables);
         }
     }

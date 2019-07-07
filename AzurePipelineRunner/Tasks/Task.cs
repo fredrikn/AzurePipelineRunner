@@ -9,6 +9,9 @@ namespace AzurePipelineRunner.Tasks
 {
     public class Task : BaseTask, ITaskStep
     {
+        private string _taskBasePath = @"D:\ap\_build\Tasks";
+        private Dictionary<string, object> _inputs;
+
         public Task(ITaskStep step) : base(step)
         {
             Inputs = step.Inputs;
@@ -16,57 +19,86 @@ namespace AzurePipelineRunner.Tasks
 
             if (string.IsNullOrEmpty(DisplayName))
                 DisplayName = TaskType;
+
+            var task = TaskType.Replace("@", "V");
+            TaskTargetFolder = GetTaskMainFolder(task);
         }
 
-        public Dictionary<string, object> Inputs { get; set; }
+        public Dictionary<string, object> Inputs
+        {
+            get
+            {
+                if (_inputs == null)
+                {
+                    _inputs = new Dictionary<string, object>();
+                }
+
+                return _inputs;
+            }
+            set => _inputs = value;
+        }
 
         public string TaskType { get; set; }
 
+        private string TaskTargetFolder { get; set; }
+
         public override void Run()
         {
-            var task = TaskType.Replace("@", "V");
+            var taskExectionInfo = GetTaskExecutionInfo();
 
-            string content = GetTaskScript(task);
+            //            if (taskExectionInfo.IsNodeSupported())
+            //            {
+            //            }
+            if (taskExectionInfo.IsPowerShell3Supported())
+            {
+                var inputs = new Dictionary<string, object>();
 
-            var inputs = new Dictionary<string, object>();
+                foreach (var input in Inputs)
+                    inputs.Add($"{input.Key}", input.Value);
 
-            foreach (var input in Inputs)
-                inputs.Add($"input.{input.Key}", input.Value);
+                if (!inputs.ContainsKey("workingDirectory"))
+                    inputs.Add("workingDirectory", Path.Combine(Environment.CurrentDirectory, "..\\..\\..\\"));
 
-            if (!inputs.ContainsKey("input.workingDirectory"))
-                inputs.Add("input.workingDirectory", Path.Combine(Environment.CurrentDirectory, "..\\..\\..\\"));
+                if (!inputs.ContainsKey("IgnoreLASTEXITCODE"))
+                    inputs.Add("IgnoreLASTEXITCODE", false);
 
-            var taskVariables = new Dictionary<string, object> {
-                { "task.agent.tempDirectory", "D:\\temp" }
-            };
+                var taskVariables = new Dictionary<string, object> {
+                    { "agent.tempDirectory", "D:\\temp" }
+                };
 
-            var variables = new Dictionary<string, object>();
+                var variables = new Dictionary<string, object>();
 
-            foreach (var item in inputs)
-                variables.Add(item.Key, item.Value);
+                foreach (var item in inputs)
+                    variables.Add("INPUT_" + item.Key.ToUpperInvariant(), item.Value);
 
-            foreach (var item in taskVariables)
-                variables.Add(item.Key, item.Value);
+                foreach (var item in taskVariables)
+                    variables.Add(item.Key.Replace(".","_"), item.Value);
 
-            PowerShellInvoker.RunPowerShellScript(
-                content,
-                $@"D:\Repositories\azure-pipelines-tasks-master\Tasks\{task}",
-                new List<string> { @"D:\Repositories\AzurePipelineRunner\AzurePipelineRunner\Helpers\powershell-common.ps1" },
-                variables);
+                string scriptToRun = GetTargetScriptPath(taskExectionInfo.PowerShell3.target);
+
+                PowerShellInvoker.RunPowerShellScript(
+                    scriptToRun,
+                    TaskTargetFolder,
+                    null, //new List<string> { @"D:\Repositories\AzurePipelineRunner\AzurePipelineRunner\Helpers\powershell-common.ps1" },
+                    variables);
+            }
         }
 
-        private string GetTaskScript(string task)
+        private string GetTargetScriptPath(string targetFile)
         {
-            var taskInfoAsJson = File.ReadAllText($@"D:\Repositories\azure-pipelines-tasks-master\Tasks\{task}\task.json");
+            return Path.Combine(TaskTargetFolder, targetFile);
+        }
+
+        private Execution GetTaskExecutionInfo()
+        {
+            var taskInfoAsJson = File.ReadAllText(Path.Combine(TaskTargetFolder, "task.json"));
             var taskInfo = JsonConvert.DeserializeObject<TaskInfo>(taskInfoAsJson);
+            return taskInfo?.execution;
+        }
 
-            var targetScript = taskInfo?.execution?.PowerShell3?.target;
-
-            if (string.IsNullOrEmpty(targetScript))
-                throw new NotSupportedException($"The Task '{TaskType}' doesn't have PowerShell3 support.");
-
-            var content = File.ReadAllText($@"D:\Repositories\azure-pipelines-tasks-master\Tasks\{task}\{targetScript}");
-            return content;
+        private string GetTaskMainFolder(string task)
+        {
+            return Path.Combine(_taskBasePath, task);
         }
     }
 
@@ -85,7 +117,20 @@ namespace AzurePipelineRunner.Tasks
     internal class Execution
     {
         public PowerShell3 PowerShell3 { get; set; }
+
         public Node Node { get; set; }
+
+        public bool IsNodeSupported()
+        {
+            return !string.IsNullOrEmpty(Node?.target);
+        }
+
+        public bool IsPowerShell3Supported()
+        {
+            // TODO: Check for platform support
+            return !string.IsNullOrEmpty(PowerShell3?.target);
+        }
+
     }
 
     internal class TaskInfo

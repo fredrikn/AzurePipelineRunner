@@ -334,6 +334,7 @@ function Get-MatchingItems {
     Trace-VstsEnteringInvocation $MyInvocation
     $allFiles = New-Object System.Collections.Generic.HashSet[string]
     foreach ($pattern in $IncludePatterns) {
+
         $pathPrefix = Get-PathPrefix -Pattern $pattern
         $fileNameFilter = Get-FileNameFilter -Pattern $pattern
         $patternRegex = Convert-PatternToRegex -Pattern $pattern

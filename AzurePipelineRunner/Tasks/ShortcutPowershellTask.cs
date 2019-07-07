@@ -20,8 +20,8 @@ namespace AzurePipelineRunner.Tasks
 
         public override void Run()
         {
-            var powershellTask = new PowershellTask();
-            powershellTask.Run(Powershell);
+            //var powershellTask = new PowershellTask();
+            //powershellTask.Run(Powershell);
         }
     }
 }
