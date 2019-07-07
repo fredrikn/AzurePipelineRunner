@@ -1,4 +1,6 @@
 ﻿using AzurePipelineRunner.BuildDefinitions;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +11,26 @@ namespace AzurePipelineRunner
 {
     class Program
     {
+        private readonly IConfiguration _configuration;
+
+        public Program() {}
+
+        public Program(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+
+
         static void Main(string[] args)
+        {
+            var services = ConfigureServices();
+
+            var serviceProvider = services.BuildServiceProvider();
+
+            serviceProvider.GetService<Program>().Run();
+        }
+
+        private void Run()
         {
             var build = GetBuild(File.ReadAllText("BuildTest.yaml"));
 
@@ -21,13 +42,15 @@ namespace AzurePipelineRunner
             Console.WriteLine("Done!");
         }
 
-        private static List<StepReport> RunBuild(Build build)
+        private List<StepReport> RunBuild(Build build)
         {
+            var tasks = new TaskBuilder(build.Steps, build.Variables, _configuration).Build();
+
             var stepInvoker = new StepInvoker();
 
             var outputStepReport = new List<StepReport>();
 
-            foreach (var step in build.Tasks)
+            foreach (var step in tasks)
             {
                 if (!step.Enabled)
                     continue;
@@ -60,6 +83,27 @@ namespace AzurePipelineRunner
                 .Build();
 
             return deserializer.Deserialize<Build>(input);
+        }
+
+        private static IServiceCollection ConfigureServices()
+        {
+            IServiceCollection services = new ServiceCollection();
+
+            var config = LoadConfiguration();
+            services.AddSingleton(config);
+
+            services.AddTransient<Program>();
+            return services;
+        }
+
+        public static IConfiguration LoadConfiguration()
+        {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: true,
+                             reloadOnChange: true);
+
+            return builder.Build();
         }
     }
 }

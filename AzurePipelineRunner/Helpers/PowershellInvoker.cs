@@ -78,24 +78,14 @@
     
         private static void AddVariablesToScript(Dictionary<string, object> variables, StreamWriter writer)
         {
-            AddSingleLineVariable(variables, writer);
-        }
-    
-    
-        private static void AddSingleLineVariable(Dictionary<string, object> variables, StreamWriter writer)
-        {
             foreach (var variable in variables)
             {
                 string value;
 
                 if (variable.Value is bool)
-                {
                     value = (bool)variable.Value ? "$true" : "$false";
-                }
                 else
-                {
                     value = CreatePowerShellEncondingText(variable.Value);
-                }
 
                 WriteVariableLine(TransformToValidPowerShellVariableName(variable.Key), value, writer);
             }
@@ -120,9 +110,6 @@
     
         private static void WriteVariableLine(string variableName, string value, StreamWriter writer)
         {
-
-            //writer.WriteLine($"$script:vault['{variableName}'] =  New-Object System.Management.Automation.PSCredential('{variableName}', (ConvertTo-SecureString -String '{value}' -AsPlainText -Force))");
-
             writer.WriteLine("$Env:{0} = {1}", variableName, value);
         }
     

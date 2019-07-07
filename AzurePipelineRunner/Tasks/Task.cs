@@ -1,18 +1,27 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using AzurePipelineRunner.BuildDefinitions.Steps;
 using AzurePipelineRunner.Helpers;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
 namespace AzurePipelineRunner.Tasks
 {
     public class Task : BaseTask, ITaskStep
     {
-        private string _taskBasePath = @"D:\ap\_build\Tasks";
+        private string _taskBasePath;
+
         private Dictionary<string, object> _inputs;
 
-        public Task(ITaskStep step) : base(step)
+        private IConfiguration _configuration;
+
+        public Task(ITaskStep step, IConfiguration configuration) : base(step)
         {
+            _configuration = configuration;
+
+            _taskBasePath = _configuration.GetValue<string>("taskFolder");
+
             Inputs = step.Inputs;
             TaskType = step.TaskType;
 
@@ -45,12 +54,13 @@ namespace AzurePipelineRunner.Tasks
         {
             var taskExectionInfo = GetTaskExecutionInfo();
 
-            //            if (taskExectionInfo.IsNodeSupported())
-            //            {
-            //            }
             if (taskExectionInfo.IsPowerShell3Supported())
             {
                 InvokePowershellTask(taskExectionInfo);
+            }
+            else if (taskExectionInfo.IsNodeSupported())
+            {
+                Console.WriteLine($"The task '{TaskType}' only has Node script, that is currently not supported.");
             }
         }
 
@@ -62,8 +72,8 @@ namespace AzurePipelineRunner.Tasks
                 inputs.Add($"{input.Key}", input.Value);
 
             var taskVariables = new Dictionary<string, object> {
-                    { "agent.tempDirectory", "D:\\temp" },
-                    { "System.Debug", true } // TODO Add this as some kind of external settings.
+                    { "agent.tempDirectory", _configuration.GetValue<string>("agentTmpDir") },
+                    { "System.Debug", _configuration.GetValue<bool>("systemDebug")}
                 };
 
             var variables = new Dictionary<string, object>();
