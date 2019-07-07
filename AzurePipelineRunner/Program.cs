@@ -28,12 +28,25 @@ namespace AzurePipelineRunner
 
             var serviceProvider = services.BuildServiceProvider();
 
-            serviceProvider.GetService<Program>().Run();
+            string buildYamlPath;
+
+            if (args != null && args.Length > 0)
+            {
+                buildYamlPath = args[0];
+                if (!File.Exists(buildYamlPath))
+                    throw new FileNotFoundException($"Can't find the specified 'buildYamlPath' Build YAML file.");
+
+                serviceProvider.GetService<Program>().Run(buildYamlPath);
+            }
+            else
+            {
+                Console.WriteLine("Usage: AzurePipelineRunner <your buildfile>.yaml");
+            }
         }
 
-        private void Run()
+        private void Run(string buildYamlPath)
         {
-            var build = GetBuild(File.ReadAllText("BuildTest.yaml"));
+            var build = GetBuild(File.ReadAllText(buildYamlPath));
 
             var outputStepReport = RunBuild(build);
 

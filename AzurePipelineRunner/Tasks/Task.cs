@@ -10,8 +10,6 @@ namespace AzurePipelineRunner.Tasks
 {
     public class Task : BaseTask, ITaskStep
     {
-        private string _taskBasePath;
-
         private Dictionary<string, object> _inputs;
 
         private IConfiguration _configuration;
@@ -20,16 +18,13 @@ namespace AzurePipelineRunner.Tasks
         {
             _configuration = configuration;
 
-            _taskBasePath = _configuration.GetValue<string>("taskFolder");
-
             Inputs = step.Inputs;
             TaskType = step.TaskType;
 
             if (string.IsNullOrEmpty(DisplayName))
                 DisplayName = TaskType;
 
-            var task = TaskType.Replace("@", "V");
-            TaskTargetFolder = GetTaskMainFolder(task);
+            TaskTargetFolder = GetTaskMainFolder(TaskType.Replace("@", "V"));
         }
 
         public Dictionary<string, object> Inputs
@@ -37,9 +32,7 @@ namespace AzurePipelineRunner.Tasks
             get
             {
                 if (_inputs == null)
-                {
                     _inputs = new Dictionary<string, object>();
-                }
 
                 return _inputs;
             }
@@ -107,7 +100,7 @@ namespace AzurePipelineRunner.Tasks
 
         private string GetTaskMainFolder(string task)
         {
-            return Path.Combine(_taskBasePath, task);
+            return Path.Combine(_configuration.GetValue<string>("taskFolder"), task);
         }
     }
 
