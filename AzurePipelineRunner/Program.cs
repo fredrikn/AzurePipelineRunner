@@ -12,14 +12,15 @@ namespace AzurePipelineRunner
     class Program
     {
         private readonly IConfiguration _configuration;
+        private readonly IBuildReporter _buildReporter;
 
         public Program() {}
 
-        public Program(IConfiguration configuration)
+        public Program(IConfiguration configuration, IBuildReporter buildReporter)
         {
             _configuration = configuration;
+            _buildReporter = buildReporter;
         }
-
 
         static void Main(string[] args)
         {
@@ -36,8 +37,7 @@ namespace AzurePipelineRunner
 
             var outputStepReport = RunBuild(build);
 
-            var buildReporter = new BuildReporter();
-            buildReporter.ReportBuildResults(outputStepReport);
+            _buildReporter.ReportBuildResults(outputStepReport);
 
             Console.WriteLine("Done!");
         }
@@ -91,6 +91,8 @@ namespace AzurePipelineRunner
 
             var config = LoadConfiguration();
             services.AddSingleton(config);
+
+            services.AddSingleton<IBuildReporter>(new BuildReporter());
 
             services.AddTransient<Program>();
             return services;
