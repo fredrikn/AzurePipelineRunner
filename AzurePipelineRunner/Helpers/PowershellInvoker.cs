@@ -52,20 +52,22 @@
     
             using (var writer = new StreamWriter(bootstrapFile))
             {
+                // TODO Change the path by specify it by config
+
                 writer.WriteLine(@"Import-Module -Name D:\ap\_build\Tasks\CmdLineV2\ps_modules\VstsTaskSdk -ArgumentList @{ NonInteractive = $true; }");
 
                 AddVariablesToScript(variables, writer);
 
+                // Fake an agent version
                 writer.WriteLine("$env:AGENT_VERSION = '2.115.0'");
 
                 writer.WriteLine("## Invoke Script:");
-                writer.WriteLine($"Invoke-VstsTaskScript -ScriptBlock ([scriptblock]::Create('{script}')) -Verbose");
+                writer.WriteLine($"Invoke-VstsTaskScript -ScriptBlock ([scriptblock]::Create('{script}'))");
 
-                // TODO make sure verbose is something that is passed from the main argument instead as an optional settings
-                //if (verbose)
-                //    writer.WriteLine("Main -verbose");
-                //else
-                //    writer.WriteLine("Main");
+                //TODO make sure verbose is something that is passed from the main argument instead as an optional settings
+
+                if (verbose)
+                    writer.Write(" -Verbose");
 
                 writer.Flush();
             }

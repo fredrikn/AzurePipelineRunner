@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using AzurePipelineRunner.BuildDefinitions.Steps;
 using AzurePipelineRunner.Helpers;
@@ -51,37 +50,37 @@ namespace AzurePipelineRunner.Tasks
             //            }
             if (taskExectionInfo.IsPowerShell3Supported())
             {
-                var inputs = new Dictionary<string, object>();
+                InvokePowershellTask(taskExectionInfo);
+            }
+        }
 
-                foreach (var input in Inputs)
-                    inputs.Add($"{input.Key}", input.Value);
+        private void InvokePowershellTask(Execution taskExectionInfo)
+        {
+            var inputs = new Dictionary<string, object>();
 
-                if (!inputs.ContainsKey("workingDirectory"))
-                    inputs.Add("workingDirectory", Path.Combine(Environment.CurrentDirectory, "..\\..\\..\\"));
+            foreach (var input in Inputs)
+                inputs.Add($"{input.Key}", input.Value);
 
-                if (!inputs.ContainsKey("IgnoreLASTEXITCODE"))
-                    inputs.Add("IgnoreLASTEXITCODE", false);
-
-                var taskVariables = new Dictionary<string, object> {
-                    { "agent.tempDirectory", "D:\\temp" }
+            var taskVariables = new Dictionary<string, object> {
+                    { "agent.tempDirectory", "D:\\temp" },
+                    { "System.Debug", true } // TODO Add this as some kind of external settings.
                 };
 
-                var variables = new Dictionary<string, object>();
+            var variables = new Dictionary<string, object>();
 
-                foreach (var item in inputs)
-                    variables.Add("INPUT_" + item.Key.ToUpperInvariant(), item.Value);
+            foreach (var item in inputs)
+                variables.Add("INPUT_" + item.Key.ToUpperInvariant(), item.Value);
 
-                foreach (var item in taskVariables)
-                    variables.Add(item.Key.Replace(".","_"), item.Value);
+            foreach (var item in taskVariables)
+                variables.Add(item.Key.Replace(".", "_"), item.Value);
 
-                string scriptToRun = GetTargetScriptPath(taskExectionInfo.PowerShell3.target);
+            string scriptToRun = GetTargetScriptPath(taskExectionInfo.PowerShell3.target);
 
-                PowerShellInvoker.RunPowerShellScript(
-                    scriptToRun,
-                    TaskTargetFolder,
-                    null, //new List<string> { @"D:\Repositories\AzurePipelineRunner\AzurePipelineRunner\Helpers\powershell-common.ps1" },
-                    variables);
-            }
+            PowerShellInvoker.RunPowerShellScript(
+                scriptToRun,
+                TaskTargetFolder,
+                null,
+                variables);
         }
 
         private string GetTargetScriptPath(string targetFile)

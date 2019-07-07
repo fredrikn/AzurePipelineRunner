@@ -73,7 +73,7 @@ namespace AzurePipelineRunner.BuildDefinitions.Steps
             if (value.Length == 0)
                 return value;
 
-            return Regex.Replace(value, @"\$\((\w+)\)", new MatchEvaluator(m => ReplaceVariable(m, variables)));
+            return Regex.Replace(value, @"\$\(([a-zA-Z0-9- _:.]+)\)", new MatchEvaluator(m => ReplaceVariable(m, variables)));
         }
 
         public string ReplaceVariable(Match m, Dictionary<string, string> variables)
