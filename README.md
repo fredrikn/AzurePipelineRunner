@@ -37,6 +37,7 @@ The build outputs will be in a folder called "_build".
   "agentTmpDir": "C:\\temp",
   "systemDebug":  true
 }
+```
 
 6) Run the code from Visual Studio to test it.
    !!Note: There are at the moment some hardcoded path structures in the code. That will be fixed later!!
