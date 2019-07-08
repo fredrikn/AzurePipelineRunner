@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.IO;
 
-namespace AzurePipelineRunner
+namespace AzurePipelineRunner.TaskExecutioners
 {
     public class PowerShellExecutioner
     {
@@ -23,15 +23,12 @@ namespace AzurePipelineRunner
             foreach (var input in task.Inputs)
                 inputs.Add($"{input.Key}", input.Value);
 
-            var taskVariables = new Dictionary<string, object> {
-                    { "agent.tempDirectory", _configuration.GetValue<string>("agentTmpDir") },
-                    { "System.Debug", _configuration.GetValue<bool>("systemDebug")}
-                };
+            var taskVariables = CreateTaskVariables();
 
             var variables = new Dictionary<string, object>();
 
             foreach (var item in inputs)
-                variables.Add("INPUT_" + item.Key.ToUpperInvariant(), item.Value);
+                variables.Add("INPUT_" + item.Key.Replace(' ','_').ToUpperInvariant(), item.Value);
 
             foreach (var item in taskVariables)
                 variables.Add(item.Key.Replace(".", "_"), item.Value);
@@ -43,6 +40,14 @@ namespace AzurePipelineRunner
                 task.TaskTargetFolder,
                 null,
                 variables);
+        }
+
+        private Dictionary<string, object> CreateTaskVariables()
+        {
+            return new Dictionary<string, object> {
+                    { "agent.tempDirectory", _configuration.GetValue<string>("agentTmpDir") },
+                    { "System.Debug", _configuration.GetValue<bool>("systemDebug")}
+                };
         }
     }
 }

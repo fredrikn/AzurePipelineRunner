@@ -5,7 +5,7 @@ namespace AzurePipelineRunner.BuildDefinitions
 {
     public class Build
     {
-        public Dictionary<string, string> Variables { get; set; }
+        public Dictionary<string, object> Variables { get; set; }
 
         public List<Step> Steps { get; set; }
     }

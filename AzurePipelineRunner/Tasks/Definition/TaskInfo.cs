@@ -20,6 +20,13 @@ namespace AzurePipelineRunner.Tasks.Definition
 
         public Node Node { get; set; }
 
+        public Process Process { get; set; }
+
+        public bool IsBatchCommand()
+        {
+            return !string.IsNullOrWhiteSpace(Process?.target);
+        }
+
         public bool IsNodeSupported()
         {
             return !string.IsNullOrEmpty(Node?.target);
@@ -30,7 +37,14 @@ namespace AzurePipelineRunner.Tasks.Definition
             // TODO: Check for platform support
             return !string.IsNullOrEmpty(PowerShell3?.target);
         }
+    }
 
+    public class Process
+    {
+        public string target { get; set; }
+        public string argumentFormat { get; set; }
+        public string workingDirectory { get; set; }
+        public string modifyEnvironment { get; set; }
     }
 
     public class TaskInfo

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using AzurePipelineRunner.BuildDefinitions.Steps;
+using AzurePipelineRunner.TaskExecutioners;
 using AzurePipelineRunner.Tasks.Definition;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -68,7 +69,12 @@ namespace AzurePipelineRunner.Tasks
         {
             var taskExectionInfo = GetTaskExecutionInfo();
 
-            if (taskExectionInfo.IsPowerShell3Supported())
+            if(taskExectionInfo.IsBatchCommand())
+            {
+                var invoker = new ProcessExecutioner(_configuration);
+                invoker.Execute(this, taskExectionInfo);
+            }
+            else if (taskExectionInfo.IsPowerShell3Supported())
             {
                 var invoker = new PowerShellExecutioner(_configuration);
                 invoker.Execute(this, taskExectionInfo);

@@ -21,6 +21,12 @@ steps:
 - powershell: Write-Host 'Hello World!'
   displayName: 'Write-Host Hello World!'
 
+- task: BatchScript@1
+  displayName: 'Run script build_in_container.bat'
+  inputs:
+    filename: 'build_in_container.bat'
+    arguments: 'Default %BUILD_DEFINITIONVERSION% %BUILD_SOURCESDIRECTORY%\ %BUILD_ARTIFACTSTAGINGDIRECTORY% sentbuildp02.lindex.local:9000'
+
 - task: CmdLine@2
   displayName: 'echo Write your commands here.'
   inputs:

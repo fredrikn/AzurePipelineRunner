@@ -39,7 +39,7 @@ namespace AzurePipelineRunner
 
         private List<StepReport> RunBuild(Build build)
         {
-            var tasks = _taskBuilder.Build(build.Steps, build.Variables, _configuration);
+            var tasks = _taskBuilder.Build(build, _configuration);
 
             var stepInvoker = new StepInvoker();
 
