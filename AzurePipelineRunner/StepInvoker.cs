@@ -1,4 +1,5 @@
-﻿using AzurePipelineRunner.Tasks;
+﻿using AzurePipelineRunner.Report;
+using AzurePipelineRunner.Tasks;
 using System;
 using System.Diagnostics;
 

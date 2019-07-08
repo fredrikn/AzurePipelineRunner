@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace AzurePipelineRunner
+namespace AzurePipelineRunner.Report
 {
     public interface IBuildReporter
     {

@@ -1,31 +1,17 @@
 ﻿using AzurePipelineRunner.BuildDefinitions.Steps;
-using AzurePipelineRunner.Tasks;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace AzurePipelineRunner
+namespace AzurePipelineRunner.Tasks
 {
-    public class TaskBuilder
+    public class TaskBuilder : ITaskBuilder
     {
-        private readonly IConfiguration _configuration;
-
-        public Dictionary<string, string> _variables { get; set; }
-
-        public IList<Step> _steps { get; set; }
-
-        public TaskBuilder(
+        public virtual IEnumerable<BaseTask> Build(
             IList<Step> steps,
             Dictionary<string, string> variables,
             IConfiguration configuration)
-        {
-            _variables = variables;
-            _steps = steps;
-            _configuration = configuration;
-        }
-
-        public IEnumerable<BaseTask> Build()
         {
             // TODO At the moment of programming the path is set to the path basded on VS debug mode path.
             // This will be changed to config and by default work when not running in debug mode in VS.
@@ -37,21 +23,21 @@ namespace AzurePipelineRunner
             // Make sure it will be easy to change the value of those properties by some 
             // kind of config
 
-            if (!_variables.ContainsKey("build.artifactStagingDirectory"))
-                _variables.Add("build.artifactStagingDirectory", artifactStagingDir);
+            if (!variables.ContainsKey("build.artifactStagingDirectory"))
+                variables.Add("build.artifactStagingDirectory", artifactStagingDir);
 
-            foreach (var step in _steps)
+            foreach (var step in steps)
             {
-                step.UpdatePropertiesWithVariableValues(_variables);
+                step.UpdatePropertiesWithVariableValues(variables);
 
                 Task task;
 
                 if (!string.IsNullOrEmpty(step.Script))
-                    task = CreateCommandLineTask(step);
+                    task = CreateCommandLineTask(step, configuration);
                 else if (!string.IsNullOrEmpty(step.Powershell))
-                    task = CreatePowerShell3Task(step);
+                    task = CreatePowerShell3Task(step, configuration);
                 else if (!string.IsNullOrEmpty(step.TaskType))
-                    task = new Task(step, _configuration);
+                    task = new Task(step, configuration);
                 else
                     throw new NotSupportedException();
 
@@ -70,11 +56,11 @@ namespace AzurePipelineRunner
             }
         }
 
-        private Task CreateCommandLineTask(Step step)
+        private Task CreateCommandLineTask(Step step, IConfiguration configuration)
         {
             step.TaskType = "CmdLine@2";
 
-            var task = new Task(step, _configuration);
+            var task = new Task(step, configuration);
 
             task.Inputs.Add("script", step.Script);
             task.Inputs.Add("failOnStderr", step.FailOnStderr);
@@ -82,11 +68,11 @@ namespace AzurePipelineRunner
             return task;
         }
 
-        private Task CreatePowerShell3Task(Step step)
+        private Task CreatePowerShell3Task(Step step, IConfiguration configuration)
         {
             step.TaskType = "PowerShell@2";
 
-            var task = new Task(step, _configuration);
+            var task = new Task(step, configuration);
 
             task.Inputs.Add("script", step.Powershell);
             task.Inputs.Add("targetType", "INLINE");

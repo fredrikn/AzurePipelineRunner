@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AzurePipelineRunner
+namespace AzurePipelineRunner.Report
 {
     /// <summary>
     /// Information about the execution of a step
