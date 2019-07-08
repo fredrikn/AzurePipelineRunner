@@ -33,8 +33,6 @@ namespace AzurePipelineRunner
             var outputStepReport = RunBuild(build);
 
             _buildReporter.ReportBuildResults(outputStepReport);
-
-            Console.WriteLine("Done!");
         }
 
         private List<StepReport> RunBuild(Build build)
@@ -50,12 +48,10 @@ namespace AzurePipelineRunner
                 if (!step.Enabled)
                     continue;
 
-                RenderBeginStepText(step);
+                RenderStepText(step);
 
                 var stepReport = stepInvoker.RunStep(step);
                 outputStepReport.Add(stepReport);
-
-                RenderEndStepText(step);
 
                 if (!step.ContinueOnError && !stepReport.Succeed)
                     break;
@@ -64,17 +60,12 @@ namespace AzurePipelineRunner
             return outputStepReport;
         }
 
-        private static void RenderEndStepText(Task step)
+        private static void RenderStepText(Task step)
         {
             Console.Write(Environment.NewLine);
-            Console.WriteLine($"========================== END STEP '{step.DisplayName}' =============================");
-            Console.Write(Environment.NewLine);
-        }
-
-        private static void RenderBeginStepText(Task step)
-        {
-            Console.Write(Environment.NewLine);
-            Console.WriteLine($"========================== BEGIN STEP '{step.DisplayName}' ==========================");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine($"============================  STEP '{step.DisplayName}' =============================");
+            Console.ResetColor();
             Console.Write(Environment.NewLine);
         }
     }

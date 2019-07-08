@@ -1,27 +1,26 @@
-﻿namespace AzurePipelineRunner.Helpers
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.IO;
-    using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
 
+namespace AzurePipelineRunner.Helpers
+{
     public static class PowerShellInvoker
     {
-    
         public static string RunPowerShellScript(
             string script, 
             string workerDirectory, 
             List<string> includeScripts = null,
             Dictionary<string, object> variables = null,
-            bool verbose = false)
+            bool verbose = false,
+            int timeout = -1)
         {
             var bootstrapFile = CreatePowerShellBootstrapFile(script, workerDirectory, includeScripts, variables, verbose);
 
             try
             {
                 var commandArguments = CreateProcessCommandArguments(bootstrapFile);
-                return RunPowershellProcess(script, commandArguments, workerDirectory);
+                return RunPowershellProcess(script, commandArguments, workerDirectory, timeout);
             }
             finally
             {
@@ -114,39 +113,11 @@
         }
     
     
-        private static string RunPowershellProcess(string originalScript, StringBuilder commandArguments, string workerDirectory)
+        private static string RunPowershellProcess(string originalScript, StringBuilder commandArguments, string workerDirectory, int timeout)
         {
             var powerShellExe = @"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe";
-    
-            var processInfo = SetupProcessStartInfo(commandArguments, powerShellExe, workerDirectory);
-    
-            var process = Process.Start(processInfo);
-    
-            var error = process.StandardError.ReadToEnd();
-            var output = process.StandardOutput.ReadToEnd();
-    
-            Console.WriteLine(error);
-            Console.WriteLine(output);
-    
-            process.WaitForExit();
-    
-            if (process.ExitCode != 0 || !string.IsNullOrEmpty(error))
-                throw new ApplicationException(string.Format("Error while executing PowerShell script '{0}' - {1}", originalScript, error));
-    
-            return output;
-        }
-    
-    
-        private static ProcessStartInfo SetupProcessStartInfo(StringBuilder commandArguments, string powerShellExe, string workerDirectory)
-        {
-            return new ProcessStartInfo(powerShellExe, commandArguments.ToString())
-            {
-                WorkingDirectory = workerDirectory,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
+
+            return ProcessRunner.RunProcess(powerShellExe, commandArguments.ToString(), workerDirectory, timeout);
         }
     }
 }

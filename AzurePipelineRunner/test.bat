@@ -1,0 +1,1 @@
+echo Batch command test!

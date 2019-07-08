@@ -35,11 +35,14 @@ namespace AzurePipelineRunner.TaskExecutioners
 
             string scriptToRun = Path.Combine(task.TaskTargetFolder, taskExectionInfo.PowerShell3.target);
 
+            var timeout = task.TimeoutInMinutes * 60 * 1000;
+
             PowerShellInvoker.RunPowerShellScript(
                 scriptToRun,
                 task.TaskTargetFolder,
                 null,
-                variables);
+                variables,
+                timeout: timeout == 0 ? -1 : timeout);
         }
 
         private Dictionary<string, object> CreateTaskVariables()

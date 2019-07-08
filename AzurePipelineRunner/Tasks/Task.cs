@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using AzurePipelineRunner.BuildDefinitions.Steps;
 using AzurePipelineRunner.TaskExecutioners;
 using AzurePipelineRunner.Tasks.Definition;
 using Microsoft.Extensions.Configuration;
@@ -15,24 +14,9 @@ namespace AzurePipelineRunner.Tasks
 
         private IConfiguration _configuration;
 
-        public Task(ITaskStep step, IConfiguration configuration)
+        public Task(IConfiguration configuration)
         {
             _configuration = configuration;
-
-            TaskType = step.TaskType;
-            Name = step.Name;
-            DisplayName = step.DisplayName;
-            Condition = step.Condition;
-            ContinueOnError = step.ContinueOnError;
-            Enabled = step.Enabled;
-            TimeoutInMinutes = step.TimeoutInMinutes;
-            Env = step.Env;
-            Inputs = step.Inputs;
-
-            if (string.IsNullOrEmpty(DisplayName))
-                DisplayName = TaskType;
-
-            TaskTargetFolder = GetTaskMainFolder(TaskType.Replace("@", "V"));
         }
 
         public string TaskType { get; set; }
@@ -81,7 +65,9 @@ namespace AzurePipelineRunner.Tasks
             }
             else if (taskExectionInfo.IsNodeSupported())
             {
+                Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine($"The task '{TaskType}' only has Node script, that is currently not supported.");
+                Console.ResetColor();
             }
         }
 
@@ -90,11 +76,6 @@ namespace AzurePipelineRunner.Tasks
             var taskInfoAsJson = File.ReadAllText(Path.Combine(TaskTargetFolder, "task.json"));
             var taskInfo = JsonConvert.DeserializeObject<TaskInfo>(taskInfoAsJson);
             return taskInfo.execution;
-        }
-
-        private string GetTaskMainFolder(string task)
-        {
-            return Path.Combine(_configuration.GetValue<string>("taskFolder"), task);
         }
     }
 }

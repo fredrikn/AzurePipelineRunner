@@ -3,7 +3,6 @@ using AzurePipelineRunner.Tasks;
 using AzurePipelineRunner.Tasks.Definition;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Diagnostics;
 using System.IO;
 
 namespace AzurePipelineRunner.TaskExecutioners
@@ -27,39 +26,25 @@ namespace AzurePipelineRunner.TaskExecutioners
 
             bool failOnStandardError = task.Inputs.GetValueAsBool("failOnStandardError", false);
 
+            var timeoutInMinutes = task.TimeoutInMinutes * 60 * 1000;
+
             try
             {
-                RunProcess(fileName, null, workingFolder);
+                ProcessRunner.RunProcess(fileName, null, workingFolder, timeoutInMinutes == 0 ? -1 : timeoutInMinutes);
             }
             catch (Exception e)
             {
-                throw new ApplicationException($"Error while trying to run batch script '{fileName}'", e);
+                throw new ApplicationException($"Error while trying to run batch script '{fileName}' in the folder '{workingFolder}'", e);
             }
 
 
-            //RunProcess()
-
-            //      -task: BatchScript@1
-            //displayName: 'Run script build_in_container.bat'
-            //inputs:
-            //  filename: 'build_in_container.bat'
-            //  arguments: 'Default %BUILD_DEFINITIONVERSION% %BUILD_SOURCESDIRECTORY%\ %BUILD_ARTIFACTSTAGINGDIRECTORY% sentbuildp02.lindex.local:9000'
-
+     
             //    "name": "modifyEnvironment",
             //    "type": "boolean",
             //    "label": "Modify Environment",
             //    "defaultValue": "False",
             //    "required": false,
             //    "helpMarkDown": "Determines whether environment variable modifications will affect subsequent tasks."
-            //},
-            //{
-            //    "name": "workingFolder",
-            //    "type": "filePath",
-            //    "label": "Working folder",
-            //    "defaultValue": "",
-            //    "required": false,
-            //    "helpMarkDown": "Current working directory when script is run.  Defaults to the folder where the script is located.",
-            //    "groupName": "advanced"
             //},
             //{
             //    "name": "failOnStandardError",
@@ -80,39 +65,6 @@ namespace AzurePipelineRunner.TaskExecutioners
                 else
                     return Path.GetDirectoryName(Path.Combine(Environment.CurrentDirectory, fileName));
             }
-        }
-
-        private static string RunProcess(string fileName, string commandArguments, string workerDirectory)
-        {
-            var processInfo = SetupProcessStartInfo(commandArguments, fileName, workerDirectory);
-
-            var process = System.Diagnostics.Process.Start(processInfo);
-
-            var error = process.StandardError.ReadToEnd();
-            var output = process.StandardOutput.ReadToEnd();
-
-            Console.WriteLine(error);
-            Console.WriteLine(output);
-
-            process.WaitForExit();
-
-            if (process.ExitCode != 0 || !string.IsNullOrEmpty(error))
-                throw new ApplicationException(string.Format("Error while executing batch script '{0}' - {1}", fileName, error));
-
-            return output;
-        }
-
-
-        private static ProcessStartInfo SetupProcessStartInfo(string commandArguments, string fileToRun, string workerDirectory)
-        {
-            return new ProcessStartInfo(fileToRun, commandArguments)
-            {
-                WorkingDirectory = workerDirectory,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
         }
     }
 }

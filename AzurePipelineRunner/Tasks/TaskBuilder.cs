@@ -35,22 +35,16 @@ namespace AzurePipelineRunner.Tasks
 
             foreach (var step in build.Steps)
             {
-                UpdatePropertiesWithVariableValues(step, variables);
-                UpdateInputsWithVariableValue(step, variables);
-
                 Task task;
 
                 if (!string.IsNullOrEmpty(step.Script))
-                    task = CreateCommandLineTask(step, configuration);
+                    task = CreateCommandLineTask(step, variables, configuration);
                 else if (!string.IsNullOrEmpty(step.Powershell))
-                    task = CreatePowerShell3Task(step, configuration);
+                    task = CreatePowerShell3Task(step, variables, configuration);
                 else if (!string.IsNullOrEmpty(step.TaskType))
-                    task = new Task(step, configuration);
+                    task = CreateTask(step, variables, configuration);
                 else
                     throw new NotSupportedException();
-
-                // Makes sure all Inputs has the correct Key format for the Tasks
-                task.Inputs = GetFormatedVariables(task.Inputs);
 
                 var workingDirectoryKey = "workingDirectory";
 
@@ -63,7 +57,7 @@ namespace AzurePipelineRunner.Tasks
                 {
                     if (!Path.IsPathRooted(task.Inputs.GetValueAsString(soloutionKey)))
                     {
-                        task.Inputs.SetKey(soloutionKey, Path.Combine(sourceFolder, task.Inputs[soloutionKey].ToString()));
+                        task.Inputs.SetKey(soloutionKey, Path.Combine(sourceFolder, task.Inputs.GetValueAsString(soloutionKey)));
                     }
                 }
 
@@ -71,17 +65,45 @@ namespace AzurePipelineRunner.Tasks
             }
         }
 
-
-        internal void UpdatePropertiesWithVariableValues(Step step, Dictionary<string, object> variables)
+        private Task CreateTask(
+            Step step,
+            Dictionary<string, object> variables,
+            IConfiguration configuration)
         {
-            foreach (var property in step.GetType().GetProperties())
-            {
-                if (property.CanWrite && property.CanRead && property.PropertyType == typeof(string))
-                    property.SetValue(step, UpdateValueWithVariables(property.GetValue(step) as string, variables));
-            }
+            return CreateTask(step.TaskType, step, variables, configuration);
         }
 
-        internal void UpdateInputsWithVariableValue(Step step, Dictionary<string, object> variables)
+        private Task CreateTask(
+           string taskType,
+           Step step,
+           Dictionary<string, object> variables,
+           IConfiguration configuration)
+        {
+            var task = new Task(configuration);
+            task.TaskType = taskType.Replace("@", "V");
+            task.Name = step.Name;
+            task.DisplayName = GetValueWithVariableValues(step.DisplayName, variables); ;
+            task.Condition = step.Condition;
+            task.ContinueOnError = step.ContinueOnError;
+            task.Enabled = step.Enabled;
+            task.TimeoutInMinutes = step.TimeoutInMinutes;
+            task.Env = step.Env;
+            task.Inputs = GetInputsWithVariableValue(step, variables);
+
+            if (string.IsNullOrEmpty(task.DisplayName))
+                task.DisplayName = task.TaskType;
+
+            task.TaskTargetFolder = Path.Combine(configuration.GetValue<string>("taskFolder"), task.TaskType);
+
+            return task;
+        }
+
+        internal string GetValueWithVariableValues(string value, Dictionary<string, object> variables)
+        {
+            return UpdateValueWithVariables(value, variables);
+        }
+
+        internal Dictionary<string, object> GetInputsWithVariableValue(Step step, Dictionary<string, object> variables)
         {
             if (step.Inputs != null && step.Inputs.Count > 0)
             {
@@ -96,11 +118,13 @@ namespace AzurePipelineRunner.Tasks
                     else
                         newValue = input.Value;
 
-                    newInputs.Add(input.Key, newValue);
+                    newInputs.AddKey(input.Key, newValue);
                 }
 
-                step.Inputs = newInputs;
+                return newInputs;
             }
+
+            return new Dictionary<string, object>();
         }
 
         private string UpdateValueWithVariables(string value, Dictionary<string, object> variables)
@@ -121,7 +145,7 @@ namespace AzurePipelineRunner.Tasks
             if (variables.KeyExists(variableName))
                 return variables.GetValueAsString(variableName);
 
-            throw new System.ArgumentException($"The variable '{variableName}' can't be found");
+            throw new ArgumentException($"The variable '{variableName}' can't be found");
         }
 
 
@@ -137,25 +161,21 @@ namespace AzurePipelineRunner.Tasks
             return newDictionary;
         }
 
-        private Task CreateCommandLineTask(Step step, IConfiguration configuration)
+        private Task CreateCommandLineTask(Step step, Dictionary<string, object> variables, IConfiguration configuration)
         {
-            step.TaskType = "CmdLine@2";
+            var task = CreateTask("CmdLine@2", step, variables, configuration);
 
-            var task = new Task(step, configuration);
-
-            task.Inputs.AddKey("script", step.Script);
+            task.Inputs.AddKey("script", GetValueWithVariableValues(step.Script, variables));
             task.Inputs.AddKey("failOnStderr", step.FailOnStderr);
 
             return task;
         }
 
-        private Task CreatePowerShell3Task(Step step, IConfiguration configuration)
+        private Task CreatePowerShell3Task(Step step, Dictionary<string, object> variables, IConfiguration configuration)
         {
-            step.TaskType = "PowerShell@2";
+            var task = CreateTask("PowerShell@2", step, variables, configuration);
 
-            var task = new Task(step, configuration);
-
-            task.Inputs.AddKey("script", step.Powershell);
+            task.Inputs.AddKey("script", GetValueWithVariableValues(step.Powershell, variables));
             task.Inputs.AddKey("targetType", "INLINE");
             task.Inputs.AddKey("pwsh", false);
             task.Inputs.AddKey("errorActionPreference", step.ErrorActionPreference);
