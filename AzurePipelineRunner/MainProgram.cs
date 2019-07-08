@@ -64,14 +64,14 @@ namespace AzurePipelineRunner
             return outputStepReport;
         }
 
-        private static void RenderEndStepText(BaseTask step)
+        private static void RenderEndStepText(Task step)
         {
             Console.Write(Environment.NewLine);
             Console.WriteLine($"========================== END STEP '{step.DisplayName}' =============================");
             Console.Write(Environment.NewLine);
         }
 
-        private static void RenderBeginStepText(BaseTask step)
+        private static void RenderBeginStepText(Task step)
         {
             Console.Write(Environment.NewLine);
             Console.WriteLine($"========================== BEGIN STEP '{step.DisplayName}' ==========================");

@@ -8,7 +8,7 @@ namespace AzurePipelineRunner.Tasks
 {
     public class TaskBuilder : ITaskBuilder
     {
-        public virtual IEnumerable<BaseTask> Build(
+        public virtual IEnumerable<Task> Build(
             IList<Step> steps,
             Dictionary<string, string> variables,
             IConfiguration configuration)

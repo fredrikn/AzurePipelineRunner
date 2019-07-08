@@ -6,7 +6,7 @@ namespace AzurePipelineRunner.Tasks
 {
     public interface ITaskBuilder
     {
-        IEnumerable<BaseTask> Build(
+        IEnumerable<Task> Build(
             IList<Step> steps,
             Dictionary<string, string> variables,
             IConfiguration configuration);

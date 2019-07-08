@@ -17,7 +17,7 @@ namespace AzurePipelineRunner
             {
                 buildYamlPath = args[0];
                 if (!File.Exists(buildYamlPath))
-                    throw new FileNotFoundException($"Can't find the specified 'buildYamlPath' Build YAML file.");
+                    throw new FileNotFoundException($"Can't find the specified '{buildYamlPath}' Build YAML file.");
 
                 serviceProvider.GetService<MainProgram>().Run(buildYamlPath);
             }
