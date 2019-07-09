@@ -51,9 +51,9 @@ namespace AzurePipelineRunner.Helpers
     
             using (var writer = new StreamWriter(bootstrapFile))
             {
-                // TODO Change the path by specify it by config
+                var vstsTaskSdkPath = Path.Combine(workerPath, @"ps_modules\VstsTaskSdk");
 
-                writer.WriteLine(@"Import-Module -Name D:\ap\_build\Tasks\CmdLineV2\ps_modules\VstsTaskSdk -ArgumentList @{ NonInteractive = $true; }");
+                writer.WriteLine(@"Import-Module -Name " + vstsTaskSdkPath + " -ArgumentList @{ NonInteractive = $true; }");
 
                 AddVariablesToScript(variables, writer);
 

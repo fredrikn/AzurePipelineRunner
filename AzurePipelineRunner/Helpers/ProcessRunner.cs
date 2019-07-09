@@ -7,7 +7,11 @@ namespace AzurePipelineRunner.Helpers
 {
     public static class ProcessRunner
     {
-        public static string RunProcess(string fileName, string commandArguments, string workerDirectory, int timeout)
+        public static string RunProcess(
+            string fileName,
+            string commandArguments,
+            string workerDirectory,
+            int timeout)
         {
             var processInfo = SetupProcessStartInfo(commandArguments, fileName, workerDirectory);
 
@@ -38,10 +42,23 @@ namespace AzurePipelineRunner.Helpers
                         error.AppendLine(e.Data);
                 };
 
+                //// Copy the environment variables.
+                //if (environmentVariables != null && environmentVariables.Count > 0)
+                //{
+                //    foreach (var variable in environmentVariables)
+                //    {
+                //        process.StartInfo.Environment[variable.Key] = variable.Value;
+                //    }
+                //}
+
                 process.Start();
 
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
+
+                // Close the input stream to prevent commands from blocking the build waiting for user input.
+                if (process.StartInfo.RedirectStandardInput)
+                    process.StandardInput.Close();
 
                 if (process.WaitForExit(timeout) &&
                     outputWaitHandle.WaitOne(timeout) &&
@@ -73,7 +90,8 @@ namespace AzurePipelineRunner.Helpers
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardOutput = true,
-                RedirectStandardError = true
+                RedirectStandardError = true,
+                RedirectStandardInput = true
             };
         }
     }

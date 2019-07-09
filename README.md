@@ -26,10 +26,12 @@ Note: The build can take a while! If the build breaks it may be because of a pat
 
 The build outputs will be in a folder called "_build".
 
-5) Clone this repo, AzuirePipelineRunner and open it in Visual Studio 2019 and build the code.
+5) Install .Net Core 2.2 [here](https://dotnet.microsoft.com/download)
+
+6) Clone this repo, AzuirePipelineRunner and open it in Visual Studio 2019 and build the code.
    Note: A build script will soon be added to avoid using Visual Studio to build the code.
 
-6) Open the file "appsettings.json" and change the location of where the tasks are located, for example:
+7) Open the file "appsettings.json" and change the location of where the tasks are located, for example:
 
 ```
 {
@@ -39,7 +41,7 @@ The build outputs will be in a folder called "_build".
 }
 ```
 
-7) Run the code from Visual Studio to test it.
+8) Run the code from Visual Studio to test it.
    !!Note: There are at the moment some hardcoded path structures in the code. That will be fixed later!!
 
 ### Example of using the runner:
