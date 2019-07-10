@@ -7,7 +7,7 @@ namespace AzurePipelineRunner
 {
     public class StepInvoker
     {
-        public StepReport RunStep(Task step)
+        public StepReport RunStep(TaskStep step)
         {
             var stepReport = new StepReport() { Name = step.DisplayName };
 

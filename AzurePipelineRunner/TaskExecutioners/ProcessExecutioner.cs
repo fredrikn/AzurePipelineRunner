@@ -16,7 +16,7 @@ namespace AzurePipelineRunner.TaskExecutioners
             _configuration = configuration;
         }
 
-        public void Execute(Task task, Execution taskExectionInfo)
+        public void Execute(TaskStep task, Execution taskExectionInfo)
         {
             if (!task.Inputs.KeyExists("filename"))
                 throw new ArgumentException($"You need to specify the input 'filename' in the build definition file for task '{task.TaskType}'.");
@@ -54,7 +54,7 @@ namespace AzurePipelineRunner.TaskExecutioners
         /// <summary>
         /// Gets working directory for the script. If not specified the Defaults will be the folder where the script is located."
         /// </summary>
-        private static string GetWorkingFolder(Task task, string fileName)
+        private static string GetWorkingFolder(TaskStep task, string fileName)
         {
             if (task.Inputs.KeyExists("workingFolder"))
                 return task.Inputs.GetValueAsString("workingFolder");

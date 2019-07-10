@@ -11,7 +11,7 @@ namespace AzurePipelineRunner.Tasks
 {
     public class TaskBuilder : ITaskBuilder
     {
-        public virtual IEnumerable<Task> Build(
+        public virtual IEnumerable<TaskStep> Build(
             Build build,
             IConfiguration configuration)
         {
@@ -35,7 +35,7 @@ namespace AzurePipelineRunner.Tasks
 
             foreach (var step in build.Steps)
             {
-                Task task;
+                TaskStep task;
 
                 if (!string.IsNullOrEmpty(step.Script))
                     task = CreateCommandLineTask(step, variables, configuration);
@@ -65,7 +65,7 @@ namespace AzurePipelineRunner.Tasks
             }
         }
 
-        private Task CreateTask(
+        private TaskStep CreateTask(
             Step step,
             Dictionary<string, object> variables,
             IConfiguration configuration)
@@ -73,13 +73,13 @@ namespace AzurePipelineRunner.Tasks
             return CreateTask(step.TaskType, step, variables, configuration);
         }
 
-        private Task CreateTask(
+        private TaskStep CreateTask(
            string taskType,
            Step step,
            Dictionary<string, object> variables,
            IConfiguration configuration)
         {
-            var task = new Task(configuration);
+            var task = new TaskStep(configuration);
             task.TaskType = taskType.Replace("@", "V");
             task.Name = step.Name;
             task.DisplayName = GetValueWithVariableValues(step.DisplayName, variables); ;
@@ -161,7 +161,7 @@ namespace AzurePipelineRunner.Tasks
             return newDictionary;
         }
 
-        private Task CreateCommandLineTask(Step step, Dictionary<string, object> variables, IConfiguration configuration)
+        private TaskStep CreateCommandLineTask(Step step, Dictionary<string, object> variables, IConfiguration configuration)
         {
             var task = CreateTask("CmdLine@2", step, variables, configuration);
 
@@ -171,7 +171,7 @@ namespace AzurePipelineRunner.Tasks
             return task;
         }
 
-        private Task CreatePowerShell3Task(Step step, Dictionary<string, object> variables, IConfiguration configuration)
+        private TaskStep CreatePowerShell3Task(Step step, Dictionary<string, object> variables, IConfiguration configuration)
         {
             var task = CreateTask("PowerShell@2", step, variables, configuration);
 

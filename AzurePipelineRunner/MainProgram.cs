@@ -60,7 +60,7 @@ namespace AzurePipelineRunner
             return outputStepReport;
         }
 
-        private static void RenderStepText(Task step)
+        private static void RenderStepText(TaskStep step)
         {
             Console.Write(Environment.NewLine);
             Console.ForegroundColor = ConsoleColor.Cyan;
