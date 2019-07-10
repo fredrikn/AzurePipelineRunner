@@ -2,12 +2,13 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace AzurePipelineRunner
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             var serviceProvider = DependencyRegistration.BuildServiceProvider();
 
@@ -19,7 +20,7 @@ namespace AzurePipelineRunner
                 if (!File.Exists(buildYamlPath))
                     throw new FileNotFoundException($"Can't find the specified '{buildYamlPath}' Build YAML file.");
 
-                serviceProvider.GetService<MainProgram>().Run(buildYamlPath);
+                await serviceProvider.GetService<MainProgram>().Run(buildYamlPath);
             }
             else
             {

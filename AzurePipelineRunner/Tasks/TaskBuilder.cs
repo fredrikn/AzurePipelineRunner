@@ -2,24 +2,27 @@
 using AzurePipelineRunner.BuildDefinitions.Steps;
 using AzurePipelineRunner.Helpers;
 using Microsoft.Extensions.Configuration;
+using Microsoft.TeamFoundation.DistributedTask.WebApi;
+using Microsoft.VisualStudio.Services.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace AzurePipelineRunner.Tasks
 {
     public class TaskBuilder : ITaskBuilder
     {
-        public virtual IEnumerable<TaskStep> Build(
+        public virtual async Task<IEnumerable<TaskStep>> Build(
             Build build,
             IConfiguration configuration)
         {
             // TODO At the moment of programming the path is set to the path basded on VS debug mode path.
             // This will be changed to config and by default work when not running in debug mode in VS.
-            var workingDir = Path.Combine(Environment.CurrentDirectory, "..\\..\\..\\");
-            var sourceFolder = Path.Combine(Environment.CurrentDirectory, "..\\..\\..\\..\\");
-            var artifactStagingDir = Path.Combine(Environment.CurrentDirectory, "..\\..\\..\\..\\artifact");
+            var workingDir = Path.Combine(System.Environment.CurrentDirectory, "..\\..\\..\\");
+            var sourceFolder = Path.Combine(System.Environment.CurrentDirectory, "..\\..\\..\\..\\");
+            var artifactStagingDir = Path.Combine(System.Environment.CurrentDirectory, "..\\..\\..\\..\\artifact");
 
             // TODO Make sure all default Agent parameters is added if not specified
             // Make sure it will be easy to change the value of those properties by some 
@@ -32,6 +35,18 @@ namespace AzurePipelineRunner.Tasks
 
             // Makes sure all Variables has the correct Key format for the Tasks
             var variables = GetFormatedVariables(build.Variables);
+
+            
+            // TODO: See if config has remote config for Azure Devops.
+            //       If so, connect to Azure DevOps to get Task info and tasks
+            //configuration.GetSection("taskLocation.Remote")
+
+            //var cred = new VssBasicCredential("test", "PAT");
+            //var client = new TaskAgentHttpClient(new Uri("URL"), cred);
+
+            //var tasks = await client.GetTaskDefinitionsAsync();
+
+            var steps = new List<TaskStep>();
 
             foreach (var step in build.Steps)
             {
@@ -61,8 +76,10 @@ namespace AzurePipelineRunner.Tasks
                     }
                 }
 
-                yield return task;
+                steps.Add(task);
             }
+
+            return steps;
         }
 
         private TaskStep CreateTask(

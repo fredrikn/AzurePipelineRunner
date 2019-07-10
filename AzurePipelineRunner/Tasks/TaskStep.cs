@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using AzurePipelineRunner.TaskExecutioners;
 using AzurePipelineRunner.Tasks.Definition;
 using Microsoft.Extensions.Configuration;
@@ -49,7 +50,7 @@ namespace AzurePipelineRunner.Tasks
             set => _inputs = value;
         }
 
-        public virtual void Run()
+        public virtual async Task Run()
         {
             var taskExectionInfo = GetTaskExecutionInfo();
 
@@ -92,6 +93,8 @@ namespace AzurePipelineRunner.Tasks
                 Console.WriteLine($"The task '{TaskType}' only has Node script, that is currently not supported.");
                 Console.ResetColor();
             }
+
+            return;
         }
 
         private Execution GetTaskExecutionInfo()

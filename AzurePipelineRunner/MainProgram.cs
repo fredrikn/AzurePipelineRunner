@@ -4,6 +4,7 @@ using AzurePipelineRunner.Tasks;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace AzurePipelineRunner
 {
@@ -26,18 +27,18 @@ namespace AzurePipelineRunner
             _buildDefinitionReader = buildDefinitionReader;
         }
 
-        public void Run(string buildYamlPath)
+        public async Task Run(string buildYamlPath)
         {
             var build = _buildDefinitionReader.GetBuild(buildYamlPath);
 
-            var outputStepReport = RunBuild(build);
+            var outputStepReport = await RunBuild(build);
 
             _buildReporter.ReportBuildResults(outputStepReport);
         }
 
-        private List<StepReport> RunBuild(Build build)
+        private async Task<List<StepReport>> RunBuild(Build build)
         {
-            var tasks = _taskBuilder.Build(build, _configuration);
+            var tasks = await _taskBuilder.Build(build, _configuration);
 
             var stepInvoker = new StepInvoker();
 
@@ -50,7 +51,7 @@ namespace AzurePipelineRunner
 
                 RenderStepText(step);
 
-                var stepReport = stepInvoker.RunStep(step);
+                var stepReport = await stepInvoker.RunStep(step);
                 outputStepReport.Add(stepReport);
 
                 if (!step.ContinueOnError && !stepReport.Succeed)
