@@ -1,4 +1,5 @@
 ﻿using AzurePipelineRunner.BuildDefinitions;
+using AzurePipelineRunner.Configuration;
 using AzurePipelineRunner.Report;
 using AzurePipelineRunner.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -14,13 +15,13 @@ namespace AzurePipelineRunner.Bootstrap
         {
             IServiceCollection services = new ServiceCollection();
 
-            services.AddSingleton(LoadConfiguration());
-
             services.AddSingleton<ITaskBuilder>(new TaskBuilder());
 
             services.AddSingleton<IBuildReporter>(new BuildReporter());
 
             services.AddSingleton<IBuildDefinitionReader>(new BuildDefinitionReader());
+
+            services.AddSingleton<IAppConfiguration>(new AppConfiguration(LoadConfiguration()));
 
             services.AddTransient<MainProgram>();
 

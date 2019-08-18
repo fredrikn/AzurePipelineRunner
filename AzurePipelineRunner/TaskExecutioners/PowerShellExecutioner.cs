@@ -1,10 +1,7 @@
-﻿using AzurePipelineRunner.Helpers;
+﻿using AzurePipelineRunner.Configuration;
+using AzurePipelineRunner.Helpers;
 using AzurePipelineRunner.Tasks;
 using AzurePipelineRunner.Tasks.Definition;
-using Microsoft.Extensions.Configuration;
-using Microsoft.TeamFoundation.DistributedTask.WebApi;
-using Microsoft.VisualStudio.Services.Common;
-using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -12,14 +9,14 @@ namespace AzurePipelineRunner.TaskExecutioners
 {
     public class PowerShellExecutioner
     {
-        private readonly IConfiguration _configuration;
+        private readonly IAppConfiguration _configuration;
 
-        public PowerShellExecutioner(IConfiguration configuration)
+        public PowerShellExecutioner(IAppConfiguration configuration)
         {
             _configuration = configuration;
         }
 
-        public void Execute(TaskStep task, Execution taskExectionInfo)
+        public void Execute(TaskStep task)
         {
             var inputs = new Dictionary<string, object>();
 
@@ -31,12 +28,14 @@ namespace AzurePipelineRunner.TaskExecutioners
             var variables = new Dictionary<string, object>();
 
             foreach (var item in inputs)
-                variables.Add("INPUT_" + item.Key.Replace(' ','_').ToUpperInvariant(), item.Value);
+                variables.Add("INPUT_" + item.Key.Replace(' ', '_').ToUpperInvariant(), item.Value);
 
             foreach (var item in taskVariables)
                 variables.Add(item.Key.Replace(".", "_"), item.Value);
 
-            string scriptToRun = Path.Combine(task.TaskTargetFolder, taskExectionInfo.PowerShell3.target);
+            var scriptName = task.TaskDefinition.Execution["PowerShell3"]["target"].ToString();
+
+            string scriptToRun = Path.Combine(task.TaskTargetFolder, scriptName);
 
             var timeout = task.TimeoutInMinutes * 60 * 1000;
 
@@ -51,8 +50,8 @@ namespace AzurePipelineRunner.TaskExecutioners
         private Dictionary<string, object> CreateTaskVariables()
         {
             return new Dictionary<string, object> {
-                    { "agent.tempDirectory", _configuration.GetValue<string>("agentTmpDir") },
-                    { "System.Debug", _configuration.GetValue<bool>("systemDebug")}
+                    { "agent.tempDirectory", _configuration.TempDir },
+                    { "System.Debug", _configuration.SystemDebug}
                 };
         }
     }

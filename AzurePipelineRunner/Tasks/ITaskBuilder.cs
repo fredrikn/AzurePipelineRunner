@@ -1,5 +1,5 @@
 ﻿using AzurePipelineRunner.BuildDefinitions;
-using Microsoft.Extensions.Configuration;
+using AzurePipelineRunner.Configuration;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -9,6 +9,6 @@ namespace AzurePipelineRunner.Tasks
     {
         Task<IEnumerable<TaskStep>> Build(
             Build build,
-            IConfiguration configuration);
+            IAppConfiguration configuration);
     }
 }

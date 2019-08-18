@@ -1,9 +1,8 @@
 ﻿using AzurePipelineRunner.BuildDefinitions;
 using AzurePipelineRunner.BuildDefinitions.Steps;
+using AzurePipelineRunner.Configuration;
 using AzurePipelineRunner.Helpers;
-using Microsoft.Extensions.Configuration;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
-using Microsoft.VisualStudio.Services.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,10 +13,14 @@ namespace AzurePipelineRunner.Tasks
 {
     public class TaskBuilder : ITaskBuilder
     {
+        private ITaskStore _taskLocator;
+
         public virtual async Task<IEnumerable<TaskStep>> Build(
             Build build,
-            IConfiguration configuration)
+            IAppConfiguration configuration)
         {
+            _taskLocator = CreateTaskLocator(configuration);
+
             // TODO At the moment of programming the path is set to the path basded on VS debug mode path.
             // This will be changed to config and by default work when not running in debug mode in VS.
             var workingDir = Path.Combine(System.Environment.CurrentDirectory, "..\\..\\..\\");
@@ -36,16 +39,6 @@ namespace AzurePipelineRunner.Tasks
             // Makes sure all Variables has the correct Key format for the Tasks
             var variables = GetFormatedVariables(build.Variables);
 
-            
-            // TODO: See if config has remote config for Azure Devops.
-            //       If so, connect to Azure DevOps to get Task info and tasks
-            //configuration.GetSection("taskLocation.Remote")
-
-            //var cred = new VssBasicCredential("test", "PAT");
-            //var client = new TaskAgentHttpClient(new Uri("URL"), cred);
-
-            //var tasks = await client.GetTaskDefinitionsAsync();
-
             var steps = new List<TaskStep>();
 
             foreach (var step in build.Steps)
@@ -53,11 +46,11 @@ namespace AzurePipelineRunner.Tasks
                 TaskStep task;
 
                 if (!string.IsNullOrEmpty(step.Script))
-                    task = CreateCommandLineTask(step, variables, configuration);
+                    task = await CreateCommandLineTask(step, variables, configuration);
                 else if (!string.IsNullOrEmpty(step.Powershell))
-                    task = CreatePowerShell3Task(step, variables, configuration);
+                    task = await CreatePowerShell3Task(step, variables, configuration);
                 else if (!string.IsNullOrEmpty(step.TaskType))
-                    task = CreateTask(step, variables, configuration);
+                    task = await CreateTask(step, variables, configuration);
                 else
                     throw new NotSupportedException();
 
@@ -82,24 +75,37 @@ namespace AzurePipelineRunner.Tasks
             return steps;
         }
 
-        private TaskStep CreateTask(
-            Step step,
-            Dictionary<string, object> variables,
-            IConfiguration configuration)
+        private ITaskStore CreateTaskLocator(IAppConfiguration configuration)
         {
-            return CreateTask(step.TaskType, step, variables, configuration);
+            if (configuration.IsRemoteConfigured)
+            {
+                return new RemoteTaskStore(configuration);
+            }
+            else
+            {
+                return new LocalTaskStore(configuration);
+            }
         }
 
-        private TaskStep CreateTask(
+        private async Task<TaskStep> CreateTask(
+            Step step,
+            Dictionary<string, object> variables,
+            IAppConfiguration configuration)
+        {
+            return await CreateTask(step.TaskType, step, variables, configuration);
+        }
+
+        private async Task<TaskStep> CreateTask(
            string taskType,
            Step step,
            Dictionary<string, object> variables,
-           IConfiguration configuration)
+           IAppConfiguration configuration)
         {
             var task = new TaskStep(configuration);
-            task.TaskType = taskType.Replace("@", "V");
-            task.Name = step.Name;
-            task.DisplayName = GetValueWithVariableValues(step.DisplayName, variables); ;
+            task.TaskType = taskType;
+            task.Name = GetTaskName(taskType);
+            task.Version = GetTaskVersion(taskType);
+            task.DisplayName = GetValueWithVariableValues(step.DisplayName, variables);
             task.Condition = step.Condition;
             task.ContinueOnError = step.ContinueOnError;
             task.Enabled = step.Enabled;
@@ -108,11 +114,47 @@ namespace AzurePipelineRunner.Tasks
             task.Inputs = GetInputsWithVariableValue(step, variables);
 
             if (string.IsNullOrEmpty(task.DisplayName))
-                task.DisplayName = task.TaskType;
+                task.DisplayName = task.Name;
 
-            task.TaskTargetFolder = Path.Combine(configuration.GetValue<string>("taskFolder"), task.TaskType);
+            task.TaskDefinition = await _taskLocator.GetTaskDefinition(task.Name, task.Version);
+            task.TaskTargetFolder = await _taskLocator.DownloadTask(task.TaskDefinition);
 
             return task;
+        }
+
+        private static TaskDefinition GetTaskDefinition(IAppConfiguration configuration, TaskStep task)
+        {
+            if (configuration.IsRemoteConfigured)
+            {
+                return new RemoteTaskStore(configuration).GetTaskDefinition(task.Name, task.Version).Result;
+            }
+            else
+            {
+                return new LocalTaskStore(configuration).GetTaskDefinition(task.Name, task.Version).Result;
+            }
+        }
+
+        private static string GetTaskName(string name)
+        {
+            if (name.Contains('@'))
+            {
+                return name.Substring(0, name.IndexOf('@'));
+            }
+
+            return name;
+        }
+
+        private static int GetTaskVersion(string name)
+        {
+            if (name.Contains('@'))
+            {
+                int version;
+
+                if (int.TryParse(name.Substring(name.IndexOf('@')+1, 1), out version))
+                    return version;
+            }
+
+            return -1;
         }
 
         internal string GetValueWithVariableValues(string value, Dictionary<string, object> variables)
@@ -178,9 +220,9 @@ namespace AzurePipelineRunner.Tasks
             return newDictionary;
         }
 
-        private TaskStep CreateCommandLineTask(Step step, Dictionary<string, object> variables, IConfiguration configuration)
+        private async Task<TaskStep> CreateCommandLineTask(Step step, Dictionary<string, object> variables, IAppConfiguration configuration)
         {
-            var task = CreateTask("CmdLine@2", step, variables, configuration);
+            var task = await CreateTask("CmdLine@2", step, variables, configuration);
 
             task.Inputs.AddKey("script", GetValueWithVariableValues(step.Script, variables));
             task.Inputs.AddKey("failOnStderr", step.FailOnStderr);
@@ -188,9 +230,9 @@ namespace AzurePipelineRunner.Tasks
             return task;
         }
 
-        private TaskStep CreatePowerShell3Task(Step step, Dictionary<string, object> variables, IConfiguration configuration)
+        private async Task<TaskStep> CreatePowerShell3Task(Step step, Dictionary<string, object> variables, IAppConfiguration configuration)
         {
-            var task = CreateTask("PowerShell@2", step, variables, configuration);
+            var task = await CreateTask("PowerShell@2", step, variables, configuration);
 
             task.Inputs.AddKey("script", GetValueWithVariableValues(step.Powershell, variables));
             task.Inputs.AddKey("targetType", "INLINE");

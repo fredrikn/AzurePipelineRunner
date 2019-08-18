@@ -1,22 +1,23 @@
 ﻿using AzurePipelineRunner.BuildDefinitions;
+using AzurePipelineRunner.Configuration;
 using AzurePipelineRunner.Report;
 using AzurePipelineRunner.Tasks;
-using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace AzurePipelineRunner
 {
     class MainProgram
     {
-        private readonly IConfiguration _configuration;
+        private readonly IAppConfiguration _configuration;
         private readonly IBuildReporter _buildReporter;
         private readonly IBuildDefinitionReader _buildDefinitionReader;
         private readonly ITaskBuilder _taskBuilder;
 
         public MainProgram(
-            IConfiguration configuration,
+            IAppConfiguration configuration,
             ITaskBuilder taskBuilder,
             IBuildDefinitionReader buildDefinitionReader,
             IBuildReporter buildReporter)
@@ -29,6 +30,9 @@ namespace AzurePipelineRunner
 
         public async Task Run(string buildYamlPath)
         {
+            if (!Directory.Exists(_configuration.TempDir))
+                Directory.CreateDirectory(_configuration.TempDir);
+
             var build = _buildDefinitionReader.GetBuild(buildYamlPath);
 
             var outputStepReport = await RunBuild(build);
@@ -51,7 +55,7 @@ namespace AzurePipelineRunner
 
                 RenderStepText(step);
 
-                var stepReport = await stepInvoker.RunStep(step);
+                var stepReport = stepInvoker.RunStep(step);
                 outputStepReport.Add(stepReport);
 
                 if (!step.ContinueOnError && !stepReport.Succeed)

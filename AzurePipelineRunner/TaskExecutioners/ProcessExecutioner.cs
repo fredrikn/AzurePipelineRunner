@@ -1,7 +1,6 @@
-﻿using AzurePipelineRunner.Helpers;
+﻿using AzurePipelineRunner.Configuration;
+using AzurePipelineRunner.Helpers;
 using AzurePipelineRunner.Tasks;
-using AzurePipelineRunner.Tasks.Definition;
-using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
 
@@ -9,14 +8,14 @@ namespace AzurePipelineRunner.TaskExecutioners
 {
     public class ProcessExecutioner
     {
-        private readonly IConfiguration _configuration;
+        private readonly IAppConfiguration _configuration;
 
-        public ProcessExecutioner(IConfiguration configuration)
+        public ProcessExecutioner(IAppConfiguration configuration)
         {
             _configuration = configuration;
         }
 
-        public void Execute(TaskStep task, Execution taskExectionInfo)
+        public void Execute(TaskStep task)
         {
             if (!task.Inputs.KeyExists("filename"))
                 throw new ArgumentException($"You need to specify the input 'filename' in the build definition file for task '{task.TaskType}'.");

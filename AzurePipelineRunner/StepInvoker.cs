@@ -2,13 +2,12 @@
 using AzurePipelineRunner.Tasks;
 using System;
 using System.Diagnostics;
-using System.Threading.Tasks;
 
 namespace AzurePipelineRunner
 {
     public class StepInvoker
     {
-        public async Task<StepReport> RunStep(TaskStep step)
+        public StepReport RunStep(TaskStep step)
         {
             var stepReport = new StepReport() { Name = step.DisplayName };
 
@@ -17,7 +16,7 @@ namespace AzurePipelineRunner
 
             try
             {
-                await step.Run();
+                step.Run();
 
                 stepReport.Succeed = true;
             }
